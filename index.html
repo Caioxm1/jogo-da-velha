@@ -503,7 +503,7 @@
         
         .board.targeting-sacrifice.targeting .cell.x,
         .board.targeting-sacrifice.targeting .cell.o {
-             cursor: not-allowed; opacity: 0.6; pointer-events: none;
+            cursor: not-allowed; opacity: 0.6; pointer-events: none;
         }
 
         .board.targeting-sacrifice.targeting.is-x-turn .cell.x,
@@ -523,9 +523,9 @@
         .board.targeting-swap.targeting .cell.o,
         .board.targeting-shove.targeting .cell.targetable,
         .board.targeting-shove.targeting .cell.shove-origin {
-             cursor: crosshair;
-             opacity: 1;
-             pointer-events: auto;
+            cursor: crosshair;
+            opacity: 1;
+            pointer-events: auto;
         }
         
         .board.targeting .cell.swap-first-pick,
@@ -582,7 +582,7 @@
         }
 
         .cell.interdicted::after {
-            content: '🚫';
+            content: '�';
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -868,7 +868,7 @@
             overflow-y: auto;  
             overflow-x: hidden; 
             display: grid;
-            gap: 1.2rem; 
+            gap: 1.2rem;  
             align-content: start; 
             padding: 1rem;
         }
@@ -1127,12 +1127,12 @@
 
 /* Linhas Horizontais */
 #winning-laser-line.line-row-0 { top: 16.66%; left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
-#winning-laser-line.line-row-1 { top: 50%;   left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-row-1 { top: 50%;    left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
 #winning-laser-line.line-row-2 { top: 83.33%; left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
 
 /* Linhas Verticais */
 #winning-laser-line.line-col-0 { top: 50%; left: 16.66%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-#winning-laser-line.line-col-1 { top: 50%; left: 50%;   transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-col-1 { top: 50%; left: 50%;    transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
 #winning-laser-line.line-col-2 { top: 50%; left: 83.33%;  transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
 
 /* Linhas Diagonais */
@@ -1226,6 +1226,76 @@
             }
         }
 
+        /* --- ESTILOS DA TELA DE TUTORIAL --- */
+        #tutorial-screen {
+            justify-content: space-between;
+        }
+        .tutorial-content {
+            flex-grow: 1;
+            overflow-y: auto; /* Adiciona scroll se o conteúdo for grande */
+            padding: 0.5rem;
+            width: 100%;
+        }
+        /* Estilos do Acordeão */
+        .accordion-item {
+            margin-bottom: 0.8rem;
+        }
+        .accordion-header {
+            background-color: var(--cor-tabuleiro);
+            color: var(--cor-celula-hover);
+            cursor: pointer;
+            padding: 1rem;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: var(--font-principal);
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .accordion-header::after {
+            content: '▼'; /* Seta para baixo */
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.active::after {
+            transform: rotate(180deg); /* Gira a seta */
+        }
+        .accordion-header:hover {
+            background-color: #2f4858;
+        }
+        .accordion-panel {
+            padding: 0 1.2rem;
+            background-color: transparent;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        .accordion-panel p, .accordion-panel .skill-entry {
+            color: var(--cor-celula);
+            line-height: 1.6;
+            margin: 1rem 0;
+        }
+        .accordion-panel.show {
+            padding: 1rem 1.2rem;
+        }
+        .skill-entry {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.95rem;
+        }
+        .skill-entry .skill-icon {
+            font-size: 1.5rem;
+        }
+        .skill-entry strong {
+            color: var(--cor-o);
+        }
     </style>
 </head>
 <body>
@@ -1245,7 +1315,7 @@
                     <h2>Seu Perfil</h2>
                     <input type="text" id="arsenal-player-name" class="player-name-input" placeholder="Digite seu nome">
                     <div class="player-input-row">
-                         <div id="arsenal-char-preview" class="char-preview" title="Clique para trocar de personagem"></div>
+                           <div id="arsenal-char-preview" class="char-preview" title="Clique para trocar de personagem"></div>
                     </div>
                 </div>
 
@@ -1272,6 +1342,7 @@
             <button class="menu-button animated-button" id="local-multiplayer-button" style="--delay: 0.4s;">Multiplayer Local</button>
             <button class="menu-button tatico animated-button" id="tatico-mode-button" style="--delay: 0.6s;">Modo Tático</button>
             <button class="menu-button secondary" id="change-arsenal-button" style="margin-top: 2rem;">Mudar Arsenal</button>
+            <button class="menu-button secondary" id="tutorial-button">Como Jogar</button>
         </div>
 
         <div id="campaign-map-screen" class="screen">
@@ -1374,6 +1445,40 @@
             </div>
         </div>
 
+        <div id="tutorial-screen" class="screen">
+            <h1>Como Jogar</h1>
+            <div class="tutorial-content">
+
+                <div class="accordion-item">
+                    <button class="accordion-header">O Básico da Arena</button>
+                    <div class="accordion-panel">
+                        <p><strong>Objetivo:</strong> Seu objetivo não é apenas fazer 3 em linha, mas sim <strong>zerar a barra de vida do oponente!</strong></p>
+                        <p><strong>Pontuando:</strong> Cada vez que você faz uma sequência de 3 peças (horizontal, vertical ou diagonal), você causa <strong>20 de dano</strong> ao oponente.</p>
+                        <p><strong>A Regra das 3 Peças:</strong> Cada jogador pode ter no máximo 3 peças no tabuleiro. Ao jogar sua 4ª peça, sua peça mais antiga é removida automaticamente. Pense bem antes de jogar!</p>
+                        <p><strong>Dreno de Vida:</strong> O tempo corre contra você! Durante o seu turno, sua vida diminui lentamente. Não demore para fazer sua jogada.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <button class="accordion-header">Modos de Jogo</button>
+                    <div class="accordion-panel">
+                        <p><strong>Campanha:</strong> Embarque na Jornada do Guerreiro! Enfrente uma série de oponentes controlados pela IA, complete missões e desbloqueie novas habilidades para seu arsenal.</p>
+                        <p><strong>Partida Rápida:</strong> Uma batalha rápida contra a Máquina (IA). Escolha a dificuldade e teste suas estratégias.</p>
+                        <p><strong>Multiplayer Local:</strong> Desafie um amigo no mesmo dispositivo.</p>
+                        <p><strong>Modo Tático:</strong> Onde a verdadeira estratégia brilha. Use as habilidades que você selecionou no seu Arsenal para surpreender o oponente.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <button class="accordion-header">Arsenal de Habilidades</button>
+                    <div class="accordion-panel" id="tutorial-skills-list">
+                        </div>
+                </div>
+
+            </div>
+            <button id="back-to-menu-from-tutorial" class="menu-button secondary">Voltar ao Menu</button>
+        </div>
+
 
         <audio id="menu-music" src="https://raw.githubusercontent.com/Caioxm1/jogo-da-velha/main/musicamenu.mp3" loop preload="auto"></audio>
         <audio id="battle-music" src="https://raw.githubusercontent.com/Caioxm1/jogo-da-velha/main/musicabatalha.mp3" loop preload="auto"></audio>
@@ -1460,6 +1565,11 @@
             const campaignMapScreen = document.getElementById('campaign-map-screen');
             const campaignLevelGrid = document.getElementById('campaign-level-grid');
             const backToMenuFromCampaignButton = document.getElementById('back-to-menu-from-campaign');
+            // No início do script
+            const tutorialButton = document.getElementById('tutorial-button');
+            const tutorialScreen = document.getElementById('tutorial-screen');
+            const backToMenuFromTutorialButton = document.getElementById('back-to-menu-from-tutorial');
+            const tutorialSkillsList = document.getElementById('tutorial-skills-list');
             
             // --- CONSTANTS ---
             const X_CLASS = 'x', O_CLASS = 'o';
@@ -1479,7 +1589,7 @@
                 'sacrifice': { id: 'sacrifice', name: 'Sacrifício', icon: '💀', description: 'Destrói uma peça sua para DOBRAR o dano do próximo ponto.', type: 'active', implemented: true },
                 'swap': { id: 'swap', name: 'Troca', icon: '🔁', description: 'Troca a posição de duas peças no tabuleiro.', type: 'active', implemented: true },
                 'shove': { id: 'shove', name: 'Empurrão', icon: '🖐️', description: 'Empurra uma peça para uma casa vazia adjacente.', type: 'active', implemented: true },
-                'mirror': { id: 'mirror', name: 'Espelho', icon: '�', description: 'Cancela a próxima habilidade inimiga.', type: 'active', implemented: true },
+                'mirror': { id: 'mirror', name: 'Espelho', icon: '🪞', description: 'Cancela a próxima habilidade inimiga.', type: 'active', implemented: true },
             };
 
             const LEVEL_CONFIG = Array.from({ length: 80 }, (_, i) => {
@@ -1551,7 +1661,7 @@
                 }
                 // Nível 51: Portão do Ato 6
                 else if (level === 51) {
-                    return { level, aiName: "Guardião Enigmático", aiDifficulty: 'hard', aiSkills: ['swap', 'mirror', 'shield'], gate: { requiredTier: 5, requiredPercentage: 0.8 }, mission: { description: "Prove sua maestria tática para avançar.", isCompleted: (gd) => gd.playerWon } };
+                    return { level, aiName: "Guardião Enigmático", aiDifficulty: 'hard', aiSkills: ['swap', 'mirror', 'shield'], gate: { requiredTier: 6, requiredPercentage: 0.8 }, mission: { description: "Prove sua maestria tática para avançar.", isCompleted: (gd) => gd.playerWon } };
                 }
                 // Níveis 52-59: Ato 6 - Desafios do Ilusionista
                 else if (level <= 59) {
@@ -1619,19 +1729,6 @@
             function stopMenuMusic() { menuMusic.pause(); menuMusic.currentTime = 0; }
             function playBattleMusic() { stopMenuMusic(); if (battleMusic.paused) battleMusic.play().catch(() => {}); }
             function stopBattleMusic() { battleMusic.pause(); battleMusic.currentTime = 0; }
-            
-            function updateMusic(currentScreen) {
-                if (currentScreen === gameScreen) {
-                    stopMenuMusic();
-                    playBattleMusic();
-                    historyToggleButton.classList.add('visible');
-                } else {
-                    stopBattleMusic();
-                    playMenuMusic();
-                    historyToggleButton.classList.remove('visible');
-                    historyPanel.classList.remove('show');
-                }
-            }
             
             function showScreen(screenToShow, direction = 'forward') {
                 if(direction === 'none') {
@@ -1745,20 +1842,20 @@
                     skillDeckGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--cor-celula);">Nenhuma habilidade desbloqueada. Jogue o modo Campanha!</p>`;
                 } else {
                      unlockedSkills.forEach(skillId => {
-                        const skill = ALL_SKILLS[skillId];
-                        if (!skill) return;
+                         const skill = ALL_SKILLS[skillId];
+                         if (!skill) return;
 
-                        const card = document.createElement('div');
-                        card.className = 'skill-card';
-                        card.dataset.skillId = skill.id;
-                        card.innerHTML = `<div class="skill-icon">${skill.icon}</div><div class="skill-name">${skill.name}</div>`;
-                        card.title = skill.description;
-                        
-                        if (playerSkillKit.includes(skill.id)) card.classList.add('selected');
-                        
-                        card.addEventListener('click', () => handleSkillSelection(skill.id));
-                        skillDeckGrid.appendChild(card);
-                    });
+                         const card = document.createElement('div');
+                         card.className = 'skill-card';
+                         card.dataset.skillId = skill.id;
+                         card.innerHTML = `<div class="skill-icon">${skill.icon}</div><div class="skill-name">${skill.name}</div>`;
+                         card.title = skill.description;
+                         
+                         if (playerSkillKit.includes(skill.id)) card.classList.add('selected');
+                         
+                         card.addEventListener('click', () => handleSkillSelection(skill.id));
+                         skillDeckGrid.appendChild(card);
+                     });
                 }
 
                 for(let i = 0; i < maxKitSize; i++) {
@@ -1768,9 +1865,9 @@
                     if (skillId && ALL_SKILLS[skillId]) {
                         const skill = ALL_SKILLS[skillId];
                         kitSlot.innerHTML = `<div class="skill-card selected" title="${skill.description}">
-                                                  <div class="skill-icon">${skill.icon}</div>
-                                                  <div class="skill-name">${skill.name}</div>
-                                              </div>`;
+                                                 <div class="skill-icon">${skill.icon}</div>
+                                                 <div class="skill-name">${skill.name}</div>
+                                             </div>`;
                     }
                     playerKitSlots.appendChild(kitSlot);
                 }
@@ -1913,8 +2010,8 @@
                     if (currentLevelData.level === 35 && !campaignProgress.unlockedThirdSlot) {
                         campaignProgress.unlockedThirdSlot = true;
                         const notificationMessage = `<h3>Arsenal Expandido!</h3>
-                                                     <p>Você provou seu valor tático. Como recompensa, o 3º slot de habilidade foi desbloqueado para os modos **Batalha Tática** e **Partida Rápida**!</p>
-                                                     <p><i>(Na Campanha, o desafio continua com 2 slots).</i></p>`;
+                                                    <p>Você provou seu valor tático. Como recompensa, o 3º slot de habilidade foi desbloqueado para os modos **Batalha Tática** e **Partida Rápida**!</p>
+                                                    <p><i>(Na Campanha, o desafio continua com 2 slots).</i></p>`;
                         showNotification(notificationMessage.replace(/\n\s+/g, '\n'));
                     }
 
@@ -2391,7 +2488,7 @@
                              }
                         } else if (targetingState.step === 2) {
                              if(cell !== targetingState.firstCell && (cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS))) {
-                                handleSwapExecution(targetingState.firstCell, cell);
+                                 handleSwapExecution(targetingState.firstCell, cell);
                              }
                         }
                     } else if (targetingState.skill === 'shove') {
@@ -2587,13 +2684,98 @@
                  if(!isPlayerX){
                       setTimeout(() => swapTurns(), 500);
                  } else {
-                      swapTurns();
+                     swapTurns();
                  }
              }
 
              function activateBomb(player, skillId){ 
+                 if (!isGameActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId) || targetingState) return;
                  if (handleMirrorReflection(player, skillId)) return;
-                 //... full logic remains the same
+                 targetingState = { skill: 'bomb', player: player };
+                 boardElement.classList.add('targeting');
+                 logAction("Selecione uma peça inimiga para destruir.", "system-log");
+                 updateSkillButtonsState();
+
+                 // AI uses bomb
+                 if (player === O_CLASS) {
+                     const opponentMoves = movesX.length > 0 ? movesX : movesO; // Target player X's pieces
+                     const targetCell = opponentMoves[Math.floor(Math.random() * opponentMoves.length)];
+                     if (targetCell) {
+                         // Perform the action after a small delay for visual effect
+                         setTimeout(() => {
+                             const targetCellIndex = parseInt(targetCell.dataset.cellIndex);
+                             const targetClass = targetCell.classList.contains(X_CLASS) ? X_CLASS : O_CLASS;
+                             
+                             if (targetClass === X_CLASS) { // Ensure it's X's piece
+                                 // Remove the piece from the board
+                                 targetCell.classList.remove(X_CLASS);
+                                 const indexToRemove = movesX.indexOf(targetCell);
+                                 if (indexToRemove > -1) {
+                                     movesX.splice(indexToRemove, 1);
+                                 }
+                                 
+                                 // Interdict the cell
+                                 interdictedCellIndex = targetCellIndex;
+                                 targetCell.classList.add('interdicted');
+                                 logAction(`${gamePlayerLabelO.innerText} usa Bomba 💣 na casa ${targetCellIndex + 1}!`, `player-${O_CLASS}-log`);
+                                 playSound(bombSound);
+                                 playerSkillsUsed.o.push(skillId);
+                                 resetTargetingMode();
+                                 updateOldestPieceIndicator();
+                                 setTimeout(() => swapTurns(), 500); // AI's turn ends
+                             } else {
+                                // If for some reason the target wasn't an X piece, or no target, AI passes
+                                logAction("IA tentou usar Bomba, mas não encontrou alvo válido ou alvo inesperado.", 'system-log');
+                                resetTargetingMode();
+                                setTimeout(() => swapTurns(), 500);
+                             }
+                         }, 1000); // Small delay for AI action
+                     } else {
+                        logAction("IA tentou usar Bomba, mas não havia peças inimigas para alvejar.", 'system-log');
+                        resetTargetingMode();
+                        setTimeout(() => swapTurns(), 500);
+                     }
+                 } else { // Human player X activating bomb
+                    cellElements.forEach(cell => {
+                        if (cell.classList.contains(O_CLASS)) { // Only target opponent's pieces
+                            cell.classList.add('targetable');
+                        }
+                    });
+                 }
+             }
+             
+             // Bomb execution logic for player X (called by handleTaticoClick when targetingState.skill === 'bomb')
+             function handleBombExecution(cell) {
+                 if (!targetingState || targetingState.skill !== 'bomb') return;
+                 const player = targetingState.player;
+                 const isPlayerX = player === X_CLASS;
+                 const targetClass = isPlayerX ? O_CLASS : X_CLASS; // Opponent's class
+                 
+                 if (!cell.classList.contains(targetClass)) {
+                     showNotification("Você só pode destruir peças do oponente!");
+                     return;
+                 }
+
+                 const targetCellIndex = parseInt(cell.dataset.cellIndex);
+
+                 // Remove the piece from the board
+                 cell.classList.remove(targetClass);
+                 const movesArray = isPlayerX ? movesO : movesX; // Array of opponent's moves
+                 const indexToRemove = movesArray.indexOf(cell);
+                 if (indexToRemove > -1) {
+                     movesArray.splice(indexToRemove, 1);
+                 }
+                 
+                 // Interdict the cell
+                 interdictedCellIndex = targetCellIndex;
+                 cell.classList.add('interdicted');
+
+                 logAction(`${isPlayerX ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText} usa Bomba 💣 na casa ${targetCellIndex + 1}!`, `player-${player}-log`);
+                 playSound(bombSound);
+                 playerSkillsUsed[player].push('bomb');
+                 resetTargetingMode();
+                 updateOldestPieceIndicator();
+                 swapTurns();
              }
              
              function activateShield(player, skillId){ 
@@ -2609,9 +2791,9 @@
                  playSound(shieldSound);
                  updateSkillButtonsState();
                  if(player === O_CLASS){
-                       setTimeout(() => swapTurns(), 500);
+                        setTimeout(() => swapTurns(), 500);
                  } else {
-                      swapTurns();
+                     swapTurns();
                  }
              }
 
@@ -2694,13 +2876,13 @@
                     handleDamage(O_CLASS, DAMAGE_PER_POINT, winO.combo);
                 } else {
                      if (player === X_CLASS) {
-                          swapTurns();
+                         swapTurns();
                      } else {
-                          setTimeout(() => swapTurns(), 500);
+                         setTimeout(() => swapTurns(), 500);
                      }
                 }
             }
-             
+            
             function activateShove(player, skillId){ 
                 if (!isGameActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId) || targetingState) return;
                 if (handleMirrorReflection(player, skillId)) return;
@@ -2765,7 +2947,7 @@
                  if(player === O_CLASS){
                       setTimeout(() => swapTurns(), 500);
                  } else {
-                    swapTurns();
+                     swapTurns();
                  }
              }
              
@@ -2787,8 +2969,8 @@
 
              function resetTargetingMode() {
                  if (targetingState) {
-                     if (targetingState.firstCell) targetingState.firstCell.classList.remove('swap-first-pick');
-                     if (targetingState.pieceToMove) targetingState.pieceToMove.classList.remove('shove-origin');
+                      if (targetingState.firstCell) targetingState.firstCell.classList.remove('swap-first-pick');
+                      if (targetingState.pieceToMove) targetingState.pieceToMove.classList.remove('shove-origin');
                  }
                  targetingState = null;
                  boardElement.className = 'board'; // Reset all targeting classes
@@ -2797,32 +2979,32 @@
              }
 
             // ===== INÍCIO DA FUNÇÃO JAVASCRIPT CORRIGIDA =====
-function drawWinningLaserLine(winnerClass, combo) {
-    // 1. Mapeia a combinação vencedora para a classe CSS correta
-    const comboStr = combo.join('');
-    const lineClasses = {
-        '012': 'line-row-0', '345': 'line-row-1', '678': 'line-row-2',
-        '036': 'line-col-0', '147': 'line-col-1', '258': 'line-col-2',
-        '048': 'line-diag-0', '246': 'line-diag-1'
-    };
-    const lineClass = lineClasses[comboStr];
+            function drawWinningLaserLine(winnerClass, combo) {
+                // 1. Mapeia a combinação vencedora para a classe CSS correta
+                const comboStr = combo.join('');
+                const lineClasses = {
+                    '012': 'line-row-0', '345': 'line-row-1', '678': 'line-row-2',
+                    '036': 'line-col-0', '147': 'line-col-1', '258': 'line-col-2',
+                    '048': 'line-diag-0', '246': 'line-diag-1'
+                };
+                const lineClass = lineClasses[comboStr];
 
-    if (lineClass) {
-        // 2. Define a cor do laser
-        winningLaserLine.style.setProperty('--laser-color', winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)');
+                if (lineClass) {
+                    // 2. Define a cor do laser
+                    winningLaserLine.style.setProperty('--laser-color', winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)');
 
-        // 3. Limpa classes antigas e adiciona a classe correta para a posição e a animação
-        winningLaserLine.className = 'winning-laser-active'; // Limpa tudo, exceto a classe base
-        winningLaserLine.classList.add('show', lineClass);
+                    // 3. Limpa classes antigas e adiciona a classe correta para a posição e a animação
+                    winningLaserLine.className = 'winning-laser-active'; // Limpa tudo, exceto a classe base
+                    winningLaserLine.classList.add('show', lineClass);
 
-        // 4. Anima as células da vitória
-        const pulseColor = winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)';
-        combo.forEach(index => {
-            cellElements[index].style.setProperty('--pulse-color', pulseColor);
-            cellElements[index].classList.add('winning-cell-pulse');
-        });
-    }
-}
+                    // 4. Anima as células da vitória
+                    const pulseColor = winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)';
+                    combo.forEach(index => {
+                        cellElements[index].style.setProperty('--pulse-color', pulseColor);
+                        cellElements[index].classList.add('winning-cell-pulse');
+                    });
+                }
+            }
             // ===== FIM DA FUNÇÃO JAVASCRIPT CORRIGIDA =====
 
 
@@ -2948,8 +3130,50 @@ function drawWinningLaserLine(winnerClass, combo) {
                 }
             });
 
+            // --- TUTORIAL LOGIC ---
+            function setupTutorial() {
+                // Preenche a lista de habilidades
+                tutorialSkillsList.innerHTML = '';
+                for (const skillId in ALL_SKILLS) {
+                    const skill = ALL_SKILLS[skillId];
+                    const skillElement = document.createElement('div');
+                    skillElement.className = 'skill-entry';
+                    skillElement.innerHTML = `
+                        <span class="skill-icon">${skill.icon}</span>
+                        <div>
+                            <strong>${skill.name} (${skill.type === 'active' ? 'Ativa' : 'Passiva'}):</strong>
+                            <span>${skill.description}</span>
+                        </div>
+                    `;
+                    tutorialSkillsList.appendChild(skillElement);
+                }
+
+                // Adiciona funcionalidade ao acordeão
+                const accordionHeaders = document.querySelectorAll('.accordion-header');
+                accordionHeaders.forEach(header => {
+                    header.addEventListener('click', () => {
+                        header.classList.toggle('active');
+                        const panel = header.nextElementSibling;
+                        panel.classList.toggle('show');
+
+                        if (panel.style.maxHeight) {
+                            panel.style.maxHeight = null;
+                        } else {
+                            panel.style.maxHeight = panel.scrollHeight + "px";
+                        } 
+                    });
+                });
+            }
+
+            // Na seção de event listeners
+            tutorialButton.addEventListener('click', () => showScreen(tutorialScreen, 'forward'));
+            backToMenuFromTutorialButton.addEventListener('click', () => showScreen(modeSelectMenu, 'back'));
+            
             // --- GAME INITIALIZATION ---
-            document.addEventListener('DOMContentLoaded', loadData);
+            document.addEventListener('DOMContentLoaded', () => {
+                loadData();
+                setupTutorial(); // <-- ADICIONE ESTA LINHA
+            });
         </script>
     </body>
 </html>
