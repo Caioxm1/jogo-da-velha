@@ -1110,6 +1110,7 @@
     transition: opacity 0.3s ease-out;
     width: 0; 
     height: 0;
+    pointer-events: none; /* Adicionado para garantir que não interfira com cliques */
 }
 
 @keyframes draw-line {
@@ -1125,14 +1126,14 @@
 }
 
 /* Linhas Horizontais */
-#winning-laser-line.line-row-0 { top: 17.5%; left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-row-0 { top: 16.66%; left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
 #winning-laser-line.line-row-1 { top: 50%;   left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
-#winning-laser-line.line-row-2 { top: 82.5%; left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-row-2 { top: 83.33%; left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
 
 /* Linhas Verticais */
-#winning-laser-line.line-col-0 { top: 50%; left: 17.5%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-col-0 { top: 50%; left: 16.66%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
 #winning-laser-line.line-col-1 { top: 50%; left: 50%;   transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-#winning-laser-line.line-col-2 { top: 50%; left: 82.5%;  transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-col-2 { top: 50%; left: 83.33%;  transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
 
 /* Linhas Diagonais */
 #winning-laser-line.line-diag-0 { top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg);  animation: draw-line-diag 0.5s forwards; }
@@ -1968,6 +1969,7 @@
                 
                 boardElement.className = 'board';
                 boardElement.innerHTML = '';
+                boardElement.appendChild(winningLaserLine);
                 for(let i = 0; i < 9; i++) {
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
