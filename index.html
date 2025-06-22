@@ -222,9 +222,8 @@
 
         .skill-deck-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Reduz o tamanho mínimo para caber mais em telas estreitas */
-            gap: 1.2rem; /* Reduz o espaçamento */
-            align-content: start; /* Alinha as linhas no topo, evitando que se estiquem */
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 0.5rem; /* Este gap baixo é bom para o arsenal, mas ruim para a campanha */
         }
 
         .player-kit-slots {
@@ -852,47 +851,49 @@
         #history-log-content::-webkit-scrollbar-track { background: transparent; }
         #history-log-content::-webkit-scrollbar-thumb { background-color: var(--cor-o); border-radius: 10px; }
         
-        /* ===== INÍCIO DO AJUSTE DA TELA DE CAMPANHA (VERSÃO CORRIGIDA) ===== */
+        /* ===== INÍCIO DO AJUSTE DA TELA DE CAMPANHA (VERSÃO DEFINITIVA) ===== */
 
-        /* Garante que o layout da tela da campanha distribua o espaço corretamente */
         #campaign-map-screen {
             justify-content: space-between; 
             gap: 1rem;
         }
 
-        /* Faz o título e o botão de voltar não encolherem */
         #campaign-map-screen > h1,
         #campaign-map-screen > #back-to-menu-from-campaign {
-            flex-shrink: 0;
+            flex-shrink: 0; /* Impede que o título e o botão encolham */
         }
-
-        /* Transforma a grade de níveis em uma área rolável */
+        
+        /* ATENÇÃO: Esta é a regra principal que foi ajustada */
         #campaign-level-grid {
-            flex-grow: 1;
-            overflow-y: auto;
-            overflow-x: hidden; /* PROÍBE o scroll horizontal indesejado */
-            padding: 0.5rem 1rem;
-            min-height: 0; /* Correção crítica para o scroll em layout flex */
+            /* HERDA O 'display: grid' DA CLASSE '.skill-deck-grid' */
+            
+            /* Layout e Rolagem */
+            flex-grow: 1; /* Permite que a grade ocupe o espaço disponível */
+            min-height: 0; /* A CORREÇÃO MÁGICA: Permite que a grade encolha e o scroll funcione */
+            overflow-y: auto;   /* Habilita o scroll vertical QUANDO NECESSÁRIO */
+            overflow-x: hidden; /* Proíbe o scroll horizontal indesejado */
+
+            /* Espaçamento */
+            gap: 1.2rem; /* SOBRESCREVE o 'gap' da classe, garantindo o espaçamento */
+            align-content: start; /* Agrupa as linhas no topo */
+            padding: 1rem; /* Espaçamento interno para os botões não colarem nas bordas */
         }
 
-        /* Estiliza a barra de rolagem para combinar com o jogo */
+        /* Estiliza a barra de rolagem da campanha para combinar com o jogo */
         #campaign-level-grid::-webkit-scrollbar {
             width: 8px;
         }
-
         #campaign-level-grid::-webkit-scrollbar-track {
             background: var(--cor-fundo); 
             border-radius: 10px;
         }
-
         #campaign-level-grid::-webkit-scrollbar-thumb {
             background-color: var(--cor-o);
             border-radius: 10px;
             border: 2px solid var(--cor-fundo);
         }
-
         #campaign-level-grid::-webkit-scrollbar-thumb:hover {
-            background-color: #ffca6e; /* Uma versão mais clara do laranja para o hover */
+            background-color: #ffca6e; 
         }
 
         /* ===== FIM DO AJUSTE ===== */
@@ -1582,7 +1583,7 @@
                 }
                 // Nível 80: Chefe Final do Espelho
                 else if (level === 80) {
-                    return { level, aiName: "O Campeão Supremo", aiDifficulty: 'hard', aiSkills: ['mirror', 'shield', 'swap', 'shove', 'sacrifice'], unlocksSkill: 'mirror', mission: { description: "Derrote a lenda para desbloquear o Espelho 🪞 e completar sua jornada.", isCompleted: (gd) => gd.playerWon } };
+                    return { level, aiName: "O Campeão Supremo", aiDifficulty: 'hard', aiSkills: ['mirror', 'shield', 'swap', 'shove', 'sacrifice'], unlocksSkill: 'mirror', mission: { description: "Derrote a lenda para desbloquear o Espelho � e completar sua jornada.", isCompleted: (gd) => gd.playerWon } };
                 }
                 
                 return null; // Caso algum nível não seja coberto
