@@ -1127,14 +1127,19 @@
             height: 10px;
         }
 
-        .line-row-0 { top: 16.66%; animation: draw-line 0.5s forwards; }
-        .line-row-1 { top: 50%;    animation: draw-line 0.5s forwards; }
-        .line-row-2 { top: 83.33%; animation: draw-line 0.5s forwards; }
 
-        .line-col-0 { left: 16.66%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+        /* Linhas Horizontais */
+        .line-row-0 { top: 17.5%; animation: draw-line 0.5s forwards; }
+        .line-row-1 { top: 50%;    animation: draw-line 0.5s forwards; }
+        .line-row-2 { top: 82.5%; animation: draw-line 0.5s forwards; }
+
+
+        /* Linhas Verticais */
+        .line-col-0 { left: 17.5%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
         .line-col-1 { left: 50%;    transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-        .line-col-2 { left: 83.33%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-        
+        .line-col-2 { left: 82.5%%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+
+        /* Linhas Diagonais (não precisam de ajuste, pois o centro 50%/50% já é correto) */
         .line-diag-0 { transform: translate(-50%, -50%) rotate(45deg);  animation: draw-line-diag 0.5s forwards; }
         .line-diag-1 { transform: translate(-50%, -50%) rotate(-45deg); animation: draw-line-diag 0.5s forwards; }
 
