@@ -2800,32 +2800,32 @@
              }
 
             // ===== INÍCIO DA FUNÇÃO JAVASCRIPT CORRIGIDA =====
-            function drawWinningLaserLine(winnerClass, combo) {
-                // 1. Mapeia a combinação vencedora para a classe CSS correta
-                const comboStr = combo.join('');
-                const lineClasses = {
-                    '012': 'line-row-0', '345': 'line-row-1', '678': 'line-row-2',
-                    '036': 'line-col-0', '147': 'line-col-1', '258': 'line-col-2',
-                    '048': 'line-diag-0', '246': 'line-diag-1'
-                };
-                const lineClass = lineClasses[comboStr];
+function drawWinningLaserLine(winnerClass, combo) {
+    // 1. Mapeia a combinação vencedora para a classe CSS correta
+    const comboStr = combo.join('');
+    const lineClasses = {
+        '012': 'line-row-0', '345': 'line-row-1', '678': 'line-row-2',
+        '036': 'line-col-0', '147': 'line-col-1', '258': 'line-col-2',
+        '048': 'line-diag-0', '246': 'line-diag-1'
+    };
+    const lineClass = lineClasses[comboStr];
 
-                if (lineClass) {
-                    // 2. Define a cor do laser
-                    winningLaserLine.style.setProperty('--laser-color', winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)');
+    if (lineClass) {
+        // 2. Define a cor do laser
+        winningLaserLine.style.setProperty('--laser-color', winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)');
 
-                    // 3. Limpa classes antigas e adiciona a classe correta para a posição e a animação
-                    winningLaserLine.className = 'winning-laser-active'; // Limpa tudo, exceto a classe base
-                    winningLaserLine.classList.add('show', lineClass);
+        // 3. Limpa classes antigas e adiciona a classe correta para a posição e a animação
+        winningLaserLine.className = 'winning-laser-active'; // Limpa tudo, exceto a classe base
+        winningLaserLine.classList.add('show', lineClass);
 
-                    // 4. Anima as células da vitória
-                    const pulseColor = winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)';
-                    combo.forEach(index => {
-                        cellElements[index].style.setProperty('--pulse-color', pulseColor);
-                        cellElements[index].classList.add('winning-cell-pulse');
-                    });
-                }
-            }
+        // 4. Anima as células da vitória
+        const pulseColor = winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)';
+        combo.forEach(index => {
+            cellElements[index].style.setProperty('--pulse-color', pulseColor);
+            cellElements[index].classList.add('winning-cell-pulse');
+        });
+    }
+}
             // ===== FIM DA FUNÇÃO JAVASCRIPT CORRIGIDA =====
 
 
