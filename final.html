@@ -1,0 +1,3027 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Velha - Batalha na Arena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cor-fundo: #1a2a33;
+            --cor-tabuleiro: #1f3641;
+            --cor-celula: #a8bfc9;
+            --cor-celula-hover: #dbe8ef;
+            --cor-x: #31c3bd;
+            --cor-o: #f2b137;
+            --cor-texto: #ffffff;
+            --sombra: 0 8px 16px rgba(0, 0, 0, 0.25);
+            --vida-cor: #2ecc71;
+            --vida-fundo: #4a5a63;
+            --dano-cor: #e74c3c;
+            --escudo-cor: #3498db;
+            --espelho-cor: #9b59b6;
+            --interdicao-cor: #e74c3c;
+            --font-principal: 'Poppins', sans-serif;
+            --font-titulo: 'Bangers', cursive;
+        }
+
+        *, *::after, *::before {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-principal);
+            color: var(--cor-texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            background: linear-gradient(-45deg, #10212b, #1a2a33, #1f3641, #31c3bd);
+            background-size: 400% 400%;
+            animation: animated-background 20s ease infinite;
+        }
+
+        #game-container {
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            min-height: 600px;
+        }
+
+        .screen {
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: transparent;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            padding: 1rem;
+        }
+
+        .screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--cor-fundo);
+            z-index: -1;
+            border-radius: 20px;
+            opacity: 0.9;
+        }
+
+        .screen.active {
+            visibility: visible;
+            opacity: 1;
+            z-index: 10;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-titulo);
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+        
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            margin-bottom: 1rem;
+            color: var(--cor-celula);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--cor-celula-hover);
+        }
+        
+        h3 {
+             font-size: 1.2rem;
+             margin-bottom: 0.5rem;
+             color: var(--cor-o);
+        }
+
+        .menu-button {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--cor-tabuleiro);
+            background-color: var(--cor-celula);
+            box-shadow: inset 0 -4px 0 #899ba5;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            margin-top: 1rem;
+        }
+
+        .menu-button:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: inset 0 -2px 0 #899ba5;
+        }
+
+        .menu-button.secondary {
+            background-color: var(--cor-tabuleiro);
+            color: var(--cor-celula);
+            box-shadow: inset 0 -4px 0 #10212b;
+        }
+
+        .menu-button.tatico {
+            background-color: var(--cor-o);
+            color: var(--cor-fundo);
+            box-shadow: inset 0 -4px 0 #b48328;
+        }
+
+        #save-profile-button {
+            animation: pulse-active-player 2.5s infinite;
+        }
+
+        .menu-button.animated-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 75%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-25deg);
+            animation: shine-sweep 4s infinite;
+            animation-delay: var(--delay, 0s);
+        }
+
+        /* --- ARSENAL SCREEN STYLES --- */
+        #arsenal-screen .profile-container {
+            background-color: var(--cor-tabuleiro);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--sombra);
+        }
+        
+        .arsenal-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .skill-selection-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+             #game-container { max-width: 800px; }
+            .arsenal-layout { flex-direction: row; }
+            .profile-container { flex: 1; }
+            .skill-selection-container { flex: 2; }
+        }
+
+        #skill-deck-container, #player-kit-container {
+            background-color: var(--cor-tabuleiro);
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .skill-deck-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 1rem;
+        }
+
+        .player-kit-slots {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: var(--cor-fundo);
+            border-radius: 10px;
+        }
+        
+        .kit-slot {
+            width: 70px;
+            height: 95px;
+            border: 2px dashed var(--cor-celula);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: var(--cor-celula);
+        }
+        
+        .skill-card {
+            background-color: var(--cor-fundo);
+            border: 2px solid var(--cor-celula);
+            border-radius: 10px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1 / 1.3;
+            min-height: 95px;
+        }
+        
+        .skill-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px var(--cor-celula-hover);
+        }
+
+        .skill-card.selected {
+            border-color: var(--cor-o);
+            box-shadow: 0 0 15px var(--cor-o);
+            background-color: #2f4858;
+        }
+        
+        .skill-card .skill-icon {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .skill-card .skill-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .player-input-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .char-preview {
+            width: 70px; height: 70px;
+            cursor: pointer;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 35px;
+            transition: transform 0.2s, filter 0.2s;
+            flex-shrink: 0;
+            border: 2px dashed var(--cor-celula);
+            border-radius: 10px;
+        }
+        .char-preview:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 8px var(--color, var(--cor-celula)));
+        }
+
+        #char-preview-x { --color: var(--cor-x); }
+        #char-preview-o { --color: var(--cor-o); }
+
+        .player-name-input {
+            flex-grow: 1;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 2px solid var(--cor-celula);
+            background-color: var(--cor-fundo);
+            color: white;
+            font-size: 1rem;
+            font-family: var(--font-principal);
+            width: 100%;
+        }
+        .player-name-input:focus {
+            outline: none;
+            border-color: var(--color);
+            --color: var(--cor-x);
+        }
+        
+        /* --- Health, Skills, Board etc --- */
+        .health-bars {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .health-container {
+            width: 48%; padding: 5px;
+            border-radius: 12px;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .health-container.active {
+            animation: pulse-active-player-enhanced 2s infinite ease-in-out;
+        }
+
+        .player-label {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .player-label.player-x { color: var(--cor-x); }
+        .player-label.player-o { color: var(--cor-o); }
+
+        .health-bar-background {
+            width: 100%; height: 18px;
+            background-color: var(--vida-fundo);
+            border-radius: 10px; overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+        }
+
+        .health-bar-background.damage {
+            animation: health-bar-damage 0.5s ease-in-out;
+        }
+
+        .health-bar-foreground {
+            height: 100%; width: 100%;
+            background-color: var(--vida-cor);
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .skills-container {
+            display: none;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        .skills-container.show {
+            display: flex;
+        }
+        .skill-group {
+            display: flex;
+            gap: 10px;
+        }
+        .skill-button {
+            background: var(--cor-tabuleiro);
+            border: 2px solid var(--cor-celula);
+            color: white;
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .skill-button:hover:not(:disabled) {
+            transform: scale(1.1);
+            background-color: var(--cor-celula-hover);
+            color: var(--cor-fundo);
+        }
+        .skill-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            background-color: var(--vida-fundo);
+        }
+
+        .battle-arena {
+            height: 80px; background-color: var(--cor-tabuleiro);
+            margin-bottom: 1.5rem; border-radius: 10px;
+            display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px;
+            position: relative; overflow: hidden;
+        }
+
+        .character {
+            width: 60px; height: 60px;
+            position: relative;
+            transition: transform 0.3s ease, background-color 0.3s, box-shadow 0.3s, opacity 0.4s, filter 0.4s;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex; justify-content: center;
+            align-items: center; font-size: 30px;
+            line-height: 1;
+        }
+
+        .character.turn-active::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 130%;
+            height: 130%;
+            background: radial-gradient(circle, var(--player-color) 20%, transparent 65%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: aura-glow 2.5s infinite ease-in-out;
+        }
+
+        .character.shielded {
+            animation: pulse-shield 1.5s infinite;
+        }
+        
+        .character.damage-boost {
+            animation: pulse-damage-boost 1.5s infinite;
+        }
+
+        .character.mirror-active {
+            animation: pulse-mirror 1.5s infinite;
+        }
+
+        .character.attack { animation: energetic-attack 0.6s ease-in-out; }
+        .character.hit { animation: heavy-hit 0.6s ease-in-out; }
+        .character.victory { animation: victory-pose 2s forwards; }
+        .character.defeat { animation: defeat-pose 1.5s forwards; }
+
+        .board {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 15px; width: 100%; aspect-ratio: 1 / 1;
+            margin: 0 auto; background-color: var(--cor-tabuleiro);
+            border-radius: 15px; padding: 15px; box-shadow: var(--sombra);
+            pointer-events: auto;
+            position: relative; 
+        }
+
+        .board.locked {
+            pointer-events: none;
+        }
+
+        .board.targeting .cell {
+            cursor: not-allowed;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .board.targeting .cell.targetable {
+            cursor: crosshair;
+            animation: pulse-target 1s infinite;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .board.targeting .cell.swap-first-pick {
+            animation: pulse-shield 1s infinite;
+        }
+
+        .board.dimmed-board::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 15px; 
+            z-index: 9; 
+            opacity: 0; 
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+        }
+        
+        .board.dimmed-board.dimmed-board::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cell {
+            background-color: var(--cor-celula);
+            border-radius: 10px; cursor: pointer;
+            position: relative; box-shadow: inset 0 -4px 0 #899ba5;
+            transition: transform 0.2s, background-color 0.2s, opacity 0.3s, box-shadow 0.3s;
+            overflow: hidden; 
+        }
+
+        .cell:not(.x):not(.o):hover {
+            background-color: var(--cor-celula-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4), inset 0 -4px 0 #899ba5;
+        }
+
+        .cell.oldest-piece {
+            animation: fade-out-pulse 2s infinite ease-in-out;
+        }
+
+        .cell.interdicted {
+            cursor: not-allowed !important;
+            background-color: #556672 !important;
+            animation: shake 0.5s;
+        }
+
+        .cell.interdicted::after {
+            content: '🚫';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            color: var(--interdicao-cor);
+            opacity: 0.8;
+        }
+
+        .cell.cursed {
+            box-shadow: 0 0 10px 5px var(--amaldicoado-cor);
+            animation: pulse-cursed 1s infinite;
+        }
+
+        .cell.mined::after {
+            content: '💥'; 
+            position: absolute;
+            font-size: 1rem;
+            top: 5px;
+            right: 5px;
+            opacity: 0.8;
+        }
+        
+        .cell.portal {
+            box-shadow: 0 0 15px 5px var(--espelho-cor);
+            animation: pulse-portal 1.5s infinite;
+        }
+        
+        .cell.x, .cell.o { cursor: not-allowed; }
+
+        @keyframes place-mark-pop-in {
+            0% { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(0.5); opacity: 0; }
+            80% { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(1); opacity: 1; }
+        }
+
+        .cell.x::before, .cell.x::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%;
+            height: 10%;
+            background-color: var(--cor-x);
+            border-radius: 5px;
+            transform-origin: center;
+            animation: place-mark-pop-in 0.3s ease-out forwards;
+            pointer-events: none;
+        }
+        .cell.x::before {
+            --rotation: 45deg;
+            transform: translate(-50%, -50%) rotate(var(--rotation));
+        }
+        .cell.x::after {
+            --rotation: -45deg;
+            transform: translate(-50%, -50%) rotate(var(--rotation));
+        }
+
+        .cell.o::before {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 65%; height: 65%; background-color: transparent;
+            border: 12px solid var(--cor-o); border-radius: 50%;
+            animation: place-mark-pop-in 0.3s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content, .winning-message-content {
+            background-color: var(--cor-tabuleiro);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+            color: white;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .preset-char {
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        .preset-char:hover {
+            transform: scale(1.2);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-upload-button {
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 600;
+            background-color: var(--cor-celula);
+            color: var(--cor-tabuleiro);
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-upload-button:hover {
+            background-color: #fff;
+        }
+
+        .winning-message-content {
+            font-family: var(--font-titulo);
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            font-weight: 400;
+        }
+        
+        .winning-message-content button {
+            font-family: var(--font-principal);
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: 600;
+            background-color: var(--cor-celula);
+            color: var(--cor-tabuleiro);
+            border: none;
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        .winning-message-content button:hover {
+            transform: scale(1.05);
+            background-color: #fff;
+        }
+
+        .turn-announcement-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 85%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .turn-announcement-container.show {
+            animation: fade-in-out 2s ease-in-out forwards;
+        }
+        
+        .turn-announcement-text {
+            font-family: var(--font-titulo);
+            font-size: clamp(1.8rem, 8vw, 2.5rem);
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            padding: 1rem 2rem;
+            background-color: rgba(26, 42, 51, 0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* --- ESTILOS DO HISTÓRICO DE AÇÕES --- */
+        #history-toggle-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 20; /* Fica acima do painel e da tela de jogo */
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            background-color: var(--cor-tabuleiro);
+            color: var(--cor-celula);
+            border: 2px solid var(--cor-celula);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            display: none; /* Começa escondido, aparece só na tela de jogo */
+        }
+
+        #history-toggle-button.visible {
+            display: block;
+        }
+
+        #history-toggle-button:hover {
+            transform: scale(1.1);
+            background-color: var(--cor-celula-hover);
+            color: var(--cor-fundo);
+        }
+
+        #history-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 250px; /* Largura do painel */
+            height: 100%;
+            background-color: rgba(31, 54, 65, 0.85); /* Fundo com 85% de opacidade */
+            backdrop-filter: blur(8px); /* Efeito de vidro fosco */
+            border-left: 2px solid var(--cor-o);
+            box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+            z-index: 19;
+            padding: 1rem;
+            padding-top: 70px; /* Espaço para o botão não sobrepor o texto */
+            transform: translateX(100%); /* Começa escondido fora da tela à direita */
+            transition: transform 0.4s ease-in-out;
+            pointer-events: none; /* Não interage enquanto escondido */
+        }
+
+        #history-panel.show {
+            transform: translateX(0); /* Fica visível na tela */
+            pointer-events: auto; /* Pode ser interagido */
+        }
+
+        #history-log-content {
+            height: 100%;
+            overflow-y: auto; /* Adiciona scroll se o conteúdo for maior que o painel */
+            display: flex;
+            flex-direction: column-reverse; /* Mensagens novas aparecem em cima */
+        }
+
+        .log-entry {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--cor-fundo);
+            font-size: 0.9rem;
+            animation: fade-in-entry 0.5s ease;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        /* Cores para os jogadores no log */
+        .log-entry.player-x-log { color: var(--cor-x); }
+        .log-entry.player-o-log { color: var(--cor-o); }
+        .log-entry.system-log { color: var(--cor-celula-hover); font-style: italic; }
+
+        @keyframes fade-in-entry {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilizando a barra de rolagem (opcional, mas elegante) */
+        #history-log-content::-webkit-scrollbar { width: 5px; }
+        #history-log-content::-webkit-scrollbar-track { background: transparent; }
+        #history-log-content::-webkit-scrollbar-thumb { background-color: var(--cor-o); border-radius: 10px; }
+
+        @keyframes shine-sweep {
+            100% { left: 150%; }
+        }
+
+        @keyframes fade-out-pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes pulse-active-player-enhanced {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255,255,255,0.4);
+            }
+            50% {
+                transform: scale(1.03);
+                box-shadow: 0 0 12px 6px rgba(255,255,255,0.3);
+            }
+        }
+
+        @keyframes aura-glow {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes energetic-attack {
+            0% { transform: translate(0) scale(1); filter: none; }
+            40% {
+                transform: translate(var(--translate-x)) scale(1.3) rotate(-5deg);
+                filter: drop-shadow(0 0 15px #3498db);
+            }
+            60% { transform: translate(calc(var(--translate-x) * 0.8)) scale(1.1) rotate(5deg); filter: none; }
+            100% { transform: translate(0) scale(1); filter: none; }
+        }
+
+        @keyframes heavy-hit {
+            0% { transform: translate(0); filter: none; }
+            20% {
+                transform: translate(var(--translate-x)) scale(0.9);
+                filter: brightness(1.5) drop-shadow(0 0 15px #e74c3c);
+            }
+            40% { transform: translate(calc(var(--translate-x) * -0.5)) scale(1.05); filter: none; }
+            60%, 80% { transform: translate(0) rotate(-3deg); }
+            70%, 90% { transform: translate(0) rotate(3deg); }
+            100% { transform: translate(0) rotate(0); }
+        }
+
+        @keyframes health-bar-damage {
+            from, to { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); background-color: var(--dano-cor); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); background-color: var(--dano-cor); }
+        }
+
+        @keyframes victory-pose {
+            0% { transform: scale(1) translateY(0); filter: none; }
+            50% { transform: scale(1.2) translateY(-20px); filter: drop-shadow(0 0 15px var(--winner-color)); }
+            100% { transform: scale(1.2) translateY(-20px); filter: drop-shadow(0 0 15px var(--winner-color)); }
+        }
+
+        @keyframes defeat-pose {
+            from { transform: rotate(0); opacity: 1; filter: none; }
+            to { transform: translateY(40px) rotate(-15deg); opacity: 0.4; filter: grayscale(100%); }
+        }
+
+        @keyframes pulse-target {
+            0% { background-color: #ff4757; }
+            50% { background-color: var(--cor-celula); }
+            100% { background-color: #ff4757; }
+        }
+        
+        @keyframes pulse-shield {
+            0% { box-shadow: 0 0 10px 3px var(--escudo-cor); }
+            50% { box-shadow: 0 0 25px 8px var(--escudo-cor); }
+            100% { box-shadow: 0 0 10px 3px var(--escudo-cor); }
+        }
+        
+        @keyframes pulse-damage-boost {
+            0% { box-shadow: 0 0 10px 3px var(--dano-cor); filter: saturate(1.2); }
+            50% { box-shadow: 0 0 25px 8px var(--dano-cor); filter: saturate(1.8); }
+            100% { box-shadow: 0 0 10px 3px var(--dano-cor); filter: saturate(1.2); }
+        }
+
+        @keyframes pulse-mirror {
+            0% { box-shadow: 0 0 10px 3px var(--espelho-cor); }
+            50% { box-shadow: 0 0 25px 8px var(--espelho-cor); }
+            100% { box-shadow: 0 0 10px 3px var(--espelho-cor); }
+        }
+
+        @keyframes pulse-cursed {
+            0% { box-shadow: 0 0 10px 3px var(--amaldicoado-cor); }
+            50% { box-shadow: 0 0 25px 8px var(--amaldicoado-cor); }
+            100% { box-shadow: 0 0 10px 3px var(--amaldicoado-cor); }
+        }
+        
+        @keyframes pulse-portal {
+            0% { box-shadow: 0 0 10px 3px var(--espelho-cor); }
+            50% { box-shadow: 0 0 25px 8px var(--espelho-cor); }
+            100% { box-shadow: 0 0 10px 3px var(--espelho-cor); }
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        @keyframes pulse-active-player {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes animated-background {
+            0%{background-position:0% 50%}
+            50%{background-position:100% 50%}
+            100%{background-position:0% 50%}
+        }
+
+        .screen.slide-in-from-right { animation: slide-in-from-right 0.4s ease-out forwards; }
+        @keyframes slide-in-from-right {
+            from { transform: translateX(100%); opacity: 0; visibility: visible; }
+            to { transform: translateX(0); opacity: 1; visibility: visible; }
+        }
+
+        .screen.slide-out-to-left { z-index: 1; animation: slide-out-to-left 0.4s ease-in forwards; }
+        @keyframes slide-out-to-left {
+            from { transform: translateX(0); opacity: 1; visibility: visible; }
+            to { transform: translateX(-100%); opacity: 0; visibility: hidden; }
+        }
+
+        .screen.slide-in-from-left { animation: slide-in-from-left 0.4s ease-out forwards; }
+        @keyframes slide-in-from-left {
+            from { transform: translateX(-100%); opacity: 0; visibility: visible; }
+            to { transform: translateX(0); opacity: 1; visibility: visible; }
+        }
+
+        .screen.slide-out-to-right { z-index: 1; animation: slide-out-to-right 0.4s ease-in forwards; }
+        @keyframes slide-out-to-right {
+            from { transform: translateX(0); opacity: 1; visibility: visible; }
+            to { transform: translateX(100%); opacity: 0; visibility: hidden; }
+        }
+        
+        @keyframes fade-in-out {
+            0% { opacity: 0; transform: scale(0.7); visibility: visible; }
+            20% { opacity: 1; transform: scale(1); }
+            80% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.1); visibility: hidden; }
+        }
+
+        @keyframes particle-burst {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                box-shadow: 0 0 15px 8px var(--particle-color);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+                box-shadow: 0 0 0 0 rgba(0,0,0,0);
+            }
+        }
+
+        .particle-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, var(--particle-color) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            animation: particle-burst 0.8s ease-out forwards;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        #winning-laser-line {
+            position: absolute;
+            background-color: var(--laser-color, var(--interdicao-cor));
+            box-shadow: 0 0 10px 5px var(--laser-color, var(--interdicao-cor)), 0 0 20px 10px rgba(255, 0, 0, 0.5);
+            border-radius: 5px;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            transform-origin: center center;
+        }
+
+        @keyframes draw-laser-horizontal {
+            0% { transform: scaleX(0); opacity: 0; }
+            100% { transform: scaleX(1); opacity: 1; }
+        }
+        @keyframes draw-laser-vertical {
+            0% { transform: scaleY(0); opacity: 0; }
+            100% { transform: scaleY(1); opacity: 1; }
+        }
+        @keyframes draw-laser-diagonal-1 {
+            0% { transform: scale(0) rotate(45deg); opacity: 0; }
+            100% { transform: scale(1) rotate(45deg); opacity: 1; }
+        }
+        @keyframes draw-laser-diagonal-2 {
+            0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+            100% { transform: scale(1) rotate(-45deg); opacity: 1; }
+        }
+
+        .winning-laser-active {
+            opacity: 1 !important;
+            animation-fill-mode: forwards;
+        }
+
+        .cell.winning-cell-pulse {
+            animation: winning-cell-pulse 1s infinite alternate;
+        }
+        @keyframes winning-cell-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+            100% { transform: scale(1.05); box-shadow: 0 0 15px var(--pulse-color); }
+        }
+
+        /* --- ESTILOS VISUAIS PARA NOVOS EVENTOS CAÓTICOS --- */
+        .cell.black-hole {
+            background-color: #101518 !important;
+            cursor: not-allowed !important;
+            pointer-events: none;
+            animation: black-hole-spin 2s linear infinite;
+        }
+
+        .cell.black-hole::before,
+        .cell.black-hole::after {
+            content: '⚫'; /* Ícone de Buraco Negro */
+            font-size: 3rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 1;
+            animation: none; /* Remove a animação de colocar X ou O */
+            background-color: transparent;
+            border: none;
+            height: auto;
+            width: auto;
+        }
+
+        @keyframes black-hole-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .cell.foggy {
+            background-color: #8b9da5;
+        }
+
+        .cell.foggy::before,
+        .cell.foggy::after {
+            content: '❓'; /* Ícone de Névoa */
+            font-size: 3rem;
+            color: var(--cor-fundo);
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            animation: none;
+            background-color: transparent;
+            border: none;
+            height: auto;
+            width: auto;
+        }
+        
+        /* Efeito para a barra de vida durante a Inversão de Poder */
+        .health-container.power-inversion-glow {
+            animation: pulse-power-inversion 1.5s infinite;
+        }
+
+        @keyframes pulse-power-inversion {
+            0% { box-shadow: 0 0 8px 2px var(--espelho-cor); }
+            50% { box-shadow: 0 0 20px 7px var(--espelho-cor); }
+            100% { box-shadow: 0 0 8px 2px var(--espelho-cor); }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        
+        <button id="history-toggle-button">📜</button>
+        <div id="history-panel">
+            <h3>Histórico de Ações</h3>
+            <div id="history-log-content">
+                <!-- Log entries will be added here -->
+            </div>
+        </div>
+
+        <!-- Arsenal Screen: For player profile and skill selection -->
+        <div id="arsenal-screen" class="screen">
+            <h1>Arsenal do Jogador</h1>
+            <div class="arsenal-layout">
+                <div class="profile-container">
+                    <h2>Seu Perfil</h2>
+                    <input type="text" id="arsenal-player-name" class="player-name-input" placeholder="Digite seu nome">
+                    <div class="player-input-row">
+                         <div id="arsenal-char-preview" class="char-preview" title="Clique para trocar de personagem"></div>
+                    </div>
+                </div>
+
+                <div class="skill-selection-container">
+                    <div id="player-kit-container">
+                        <h3>Seu Kit de Batalha (Escolha 2)</h3>
+                        <div class="player-kit-slots" id="player-kit-slots">
+                            <!-- Kit slots will be populated by JS -->
+                        </div>
+                    </div>
+                    <div id="skill-deck-container">
+                        <h2>Todas as Habilidades</h2>
+                        <div class="skill-deck-grid" id="skill-deck-grid">
+                            <!-- Skill cards will be populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="menu-button animated-button" id="save-arsenal-button" style="--delay: 0.2s;">Salvar e Entrar na Arena</button>
+        </div>
+
+        <!-- Mode Select Screen: Main menu -->
+        <div id="mode-select-menu" class="screen">
+            <h1>Batalha na Arena</h1>
+            <button class="menu-button animated-button" id="single-player-button">Single Player (vs. Máquina)</button>
+            <button class="menu-button animated-button" id="local-multiplayer-button" style="--delay: 0.2s;">Multiplayer Local</button>
+            <button class="menu-button tatico animated-button" id="tatico-mode-button" style="--delay: 0.4s;">Modo Tático</button>
+            <button class="menu-button secondary" id="change-arsenal-button" style="margin-top: 2rem;">Mudar Arsenal</button>
+        </div>
+
+        <!-- Tatic/Chaotic Submenu -->
+        <div id="tatico-submenu" class="screen">
+            <h1>Modo Tático</h1>
+            <button class="menu-button animated-button" data-submode="tatico">Batalha Tática (Habilidades)</button>
+            <button class="menu-button animated-button" data-submode="caotico" style="--delay: 0.2s;">Arena Caótica (Eventos)</button>
+            <button id="back-to-mode-select-3" class="menu-button secondary">Voltar</button>
+        </div>
+
+        <!-- Opponent Select Screen (for Tatic/Chaotic modes) -->
+        <div id="opponent-select-menu" class="screen">
+            <h1 id="opponent-select-title">Escolha o Oponente</h1>
+            <button class="menu-button animated-button" id="opponent-human">Jogador (Humano)</button>
+            <button class="menu-button animated-button" id="opponent-ai" style="--delay: 0.2s;">Máquina (IA)</button>
+            <button id="back-to-tatico-menu" class="menu-button secondary">Voltar</button>
+        </div>
+
+        <!-- Difficulty Select Screen (for vs AI) -->
+        <div id="difficulty-select-menu" class="screen">
+            <h1>Escolha a Dificuldade</h1>
+            <button class="menu-button animated-button" data-difficulty="easy">Fácil</button>
+            <button class="menu-button animated-button" data-difficulty="normal" style="--delay: 0.2s;">Normal</button>
+            <button class="menu-button animated-button" data-difficulty="hard" style="--delay: 0.4s;">Difícil</button>
+            <button id="back-to-mode-select-2" class="menu-button secondary">Voltar</button>
+        </div>
+
+        <!-- Player Setup Screen (for local multiplayer) -->
+        <div id="player-setup-menu" class="screen">
+            <h1>Configurar Oponente</h1>
+            <div class="player-setup player-o">
+                <h2>JOGADOR O</h2>
+                <div class="player-input-row">
+                    <div id="char-preview-o" class="char-preview"></div>
+                    <input type="text" id="player-name-o" class="player-name-input" placeholder="Digite o nome do Jogador O" value="Jogador O">
+                </div>
+            </div>
+            <button id="start-game-button" class="menu-button">Iniciar Batalha</button>
+            <button id="back-to-mode-select" class="menu-button secondary">Voltar</button>
+        </div>
+
+        <!-- Game Screen: The actual game -->
+        <div id="game-screen" class="screen">
+            <div class="health-bars">
+                <div class="health-container" id="health-container-x">
+                    <div class="player-label player-x" id="game-player-label-x">JOGADOR X</div>
+                    <div class="health-bar-background" id="health-bg-x">
+                        <div class="health-bar-foreground" id="health-bar-x"></div>
+                    </div>
+                </div>
+                <div class="health-container" id="health-container-o">
+                    <div class="player-label player-o" id="game-player-label-o">JOGADOR O</div>
+                    <div class="health-bar-background" id="health-bg-o">
+                        <div class="health-bar-foreground" id="health-bar-o"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="skills-container" id="skills-container">
+                <div class="skill-group" id="skills-x">
+                    <!-- Player X skill buttons populated by JS -->
+                </div>
+                <div class="skill-group" id="skills-o">
+                    <!-- Player O skill buttons populated by JS -->
+                </div>
+            </div>
+
+            <div class="battle-arena">
+                <div class="character" id="player-x-char"></div>
+                <div class="character" id="player-o-char"></div>
+            </div>
+
+            <div id="game-board" class="board"></div>
+            <div id="winning-laser-line"></div>
+
+            <div id="turn-announcement" class="turn-announcement-container">
+                <div id="turn-announcement-text" class="turn-announcement-text"></div>
+            </div>
+        </div>
+
+        <!-- Modals and other overlays -->
+        <div id="winning-message" class="modal-overlay">
+            <div class="winning-message-content">
+                <div data-winning-message-text></div>
+                <button id="restartButton">Voltar ao Menu</button>
+            </div>
+        </div>
+        <div id="character-select-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h2>Escolha seu Personagem</h2>
+                <div id="preset-characters" class="character-grid"></div>
+                <label for="modal-upload" class="modal-upload-button">Carregar sua foto</label>
+                <input type="file" id="modal-upload" class="char-upload" accept="image/*" style="display: none;">
+            </div>
+        </div>
+        <div id="notification-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h2 id="notification-title">Atenção</h2>
+                <p id="notification-text" style="margin-bottom: 1.5rem; text-align: left;"></p>
+                <button id="notification-close-button" class="menu-button">Entendi</button>
+            </div>
+        </div>
+
+
+        <!-- Audio Elements -->
+        <audio id="menu-music" src="https://raw.githubusercontent.com/Caioxm1/jogo-da-velha/main/musicamenu.mp3" loop preload="auto"></audio>
+        <audio id="battle-music" src="https://raw.githubusercontent.com/Caioxm1/jogo-da-velha/main/musicabatalha.mp3" loop preload="auto"></audio>
+        <audio id="attack-sound" src="https://github.com/Caioxm1/jogo-da-velha/raw/main/golpe.mp3" preload="auto"></audio>
+        <audio id="hit-sound" src="https://github.com/Caioxm1/jogo-da-velha/raw/main/dano.mp3" preload="auto"></audio>
+        <audio id="victory-sound" src="https://github.com/Caioxm1/jogo-da-velha/raw/main/vitoria.mp3" preload="auto"></audio>
+        <audio id="shield-sound" src="https://raw.githubusercontent.com/Caioxm1/jogo-da-velha/raw/main/prote%C3%A7ao.mp3" preload="auto"></audio>
+        <audio id="bomb-sound" src="https://github.com/Caioxm1/jogo-da-velha/raw/main/explos%C3%A3o.mp3" preload="auto"></audio>
+        <audio id="click-sound" src="https://github.com/Caioxm1/jogo-da-velha/raw/main/11L-bubble_bursting-1750158387072.mp3" preload="auto"></audio>
+        <audio id="teleport-sound" src="https://github.com/Caioxm1/jogo-da-velha/raw/main/teleporte.mp3" preload="auto"></audio>
+        <audio id="heal-sound" src="https://github.com/Caioxm1/jogo-da-velha/raw/main/cura.mp3" preload="auto"></audio>
+
+        <script>
+            // --- ELEMENT MAPPING ---
+            const arsenalScreen = document.getElementById('arsenal-screen');
+            const arsenalPlayerNameInput = document.getElementById('arsenal-player-name');
+            const arsenalCharPreview = document.getElementById('arsenal-char-preview');
+            const saveArsenalButton = document.getElementById('save-arsenal-button');
+            const skillDeckGrid = document.getElementById('skill-deck-grid');
+            const playerKitSlots = document.getElementById('player-kit-slots');
+            const changeArsenalButton = document.getElementById('change-arsenal-button');
+            const modeSelectMenu = document.getElementById('mode-select-menu');
+            const taticoSubmenu = document.getElementById('tatico-submenu');
+            const opponentSelectMenu = document.getElementById('opponent-select-menu');
+            const difficultySelectMenu = document.getElementById('difficulty-select-menu');
+            const playerSetupMenu = document.getElementById('player-setup-menu');
+            const gameScreen = document.getElementById('game-screen');
+            const singlePlayerButton = document.getElementById('single-player-button');
+            const localMultiplayerButton = document.getElementById('local-multiplayer-button');
+            const taticoModeButton = document.getElementById('tatico-mode-button');
+            const taticoSubmenuButtons = document.querySelectorAll('#tatico-submenu [data-submode]');
+            const opponentHumanButton = document.getElementById('opponent-human');
+            const opponentAiButton = document.getElementById('opponent-ai');
+            const difficultyButtons = document.querySelectorAll('[data-difficulty]');
+            const backToModeSelectBtn = document.getElementById('back-to-mode-select');
+            const backToModeSelectBtn2 = document.getElementById('back-to-mode-select-2');
+            const backToModeSelectBtn3 = document.getElementById('back-to-mode-select-3');
+            const backToTaticoMenuBtn = document.getElementById('back-to-tatico-menu');
+            const opponentSelectTitle = document.getElementById('opponent-select-title');
+            const startGameButton = document.getElementById('start-game-button');
+            const charPreviewO = document.getElementById('char-preview-o');
+            const playerNameOInput = document.getElementById('player-name-o');
+            const gamePlayerLabelX = document.getElementById('game-player-label-x');
+            const gamePlayerLabelO = document.getElementById('game-player-label-o');
+            const boardElement = document.getElementById('game-board');
+            const restartButton = document.getElementById('restartButton');
+            const winningMessageElement = document.getElementById('winning-message');
+            const winningMessageTextElement = document.querySelector('[data-winning-message-text]');
+            const healthBarX = document.getElementById('health-bar-x');
+            const healthBarO = document.getElementById('health-bar-o');
+            const healthBgX = document.getElementById('health-bg-x');
+            const healthBgO = document.getElementById('health-bg-o');
+            const healthContainerX = document.getElementById('health-container-x');
+            const healthContainerO = document.getElementById('health-container-o');
+            const charX = document.getElementById('player-x-char');
+            const charO = document.getElementById('player-o-char');
+            const modal = document.getElementById('character-select-modal');
+            const presetCharsContainer = document.getElementById('preset-characters');
+            const modalUploadInput = document.getElementById('modal-upload');
+            const notificationModal = document.getElementById('notification-modal');
+            const notificationText = document.getElementById('notification-text');
+            const notificationCloseButton = document.getElementById('notification-close-button');
+            const menuMusic = document.getElementById('menu-music');
+            const battleMusic = document.getElementById('battle-music');
+            const attackSound = document.getElementById('attack-sound');
+            const hitSound = document.getElementById('hit-sound');
+            const victorySound = document.getElementById('victory-sound');
+            const shieldSound = document.getElementById('shield-sound');
+            const bombSound = document.getElementById('bomb-sound');
+            const clickSound = document.getElementById('click-sound');
+            const teleportSound = document.getElementById('teleport-sound');
+            const healSound = document.getElementById('heal-sound');
+            const skillsMainContainer = document.getElementById('skills-container');
+            const skillsXContainer = document.querySelector('#skills-x');
+            const skillsOContainer = document.querySelector('#skills-o');
+            const turnAnnouncementContainer = document.getElementById('turn-announcement');
+            const turnAnnouncementText = document.getElementById('turn-announcement-text');
+            const winningLaserLine = document.getElementById('winning-laser-line');
+            // History Elements
+            const historyToggleButton = document.getElementById('history-toggle-button');
+            const historyPanel = document.getElementById('history-panel');
+            const historyLogContent = document.getElementById('history-log-content');
+        
+            // --- CONSTANTS ---
+            const X_CLASS = 'x', O_CLASS = 'o';
+            const WINNING_COMBINATIONS = [ [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6] ];
+            const MAX_MOVES = 3, DAMAGE_PER_POINT = 20, HEALTH_DRAIN_PER_SECOND = 0.5, HEAL_AMOUNT = 25, MAX_SKILL_KIT_SIZE = 2;
+            const PRESET_EMOJIS = ['🦸','🥷','🤖','👹','👨‍🚀','🧛','🧙','🧟'];
+            const DEFAULT_AVATAR_X = { type: 'image', value: 'https://raw.githubusercontent.com/Caioxm1/jogo-da-velha/main/person1.png' };
+            const DEFAULT_AVATAR_O = { type: 'image', value: 'https://raw.githubusercontent.com/Caioxm1/jogo-da-velha/main/person2.png' };
+            const AI_SKILL_POOL = ['bomb', 'heal', 'shield', 'sacrifice', 'mirror', 'swap', 'shove'];
+        
+            // SKILLS DATA STRUCTURE
+            const ALL_SKILLS = {
+                'bomb': { id: 'bomb', name: 'Bomba', icon: '💣', description: 'Remove uma peça inimiga e interdita a célula por 1 turno.', type: 'active', implemented: true },
+                'heal': { id: 'heal', name: 'Cura', icon: '❤️‍🩹', description: 'Recupera 25 de vida.', type: 'active', implemented: true },
+                'shield': { id: 'shield', name: 'Escudo', icon: '🛡️', description: 'Bloqueia o próximo ataque inimigo.', type: 'active', implemented: true },
+                'sacrifice': { id: 'sacrifice', name: 'Sacrifício', icon: '💀', description: 'Destrói uma peça sua para DOBRAR o dano do próximo ponto.', type: 'active', implemented: true },
+                'mirror': { id: 'mirror', name: 'Espelho', icon: '🪞', description: 'Cancela a próxima habilidade inimiga.', type: 'active', implemented: true },
+                'vampirism': { id: 'vampirism', name: 'Vampirismo', icon: '🩸', description: 'Cura 50% do dano causado ao pontuar.', type: 'passive', implemented: true },
+                'swap': { id: 'swap', name: 'Troca', icon: '🔁', description: 'Troca a posição de duas peças no tabuleiro.', type: 'active', implemented: true },
+                'shove': { id: 'shove', name: 'Empurrão', icon: '🖐️', description: 'Empurra uma peça para uma casa vazia adjacente.', type: 'active', implemented: true },
+            };
+        
+            // --- STATE VARIABLES ---
+            let cellElements, isOTurn, movesX, movesO, healthX, healthO, drainInterval, isGameActive,
+                playerToEdit, gameMode = null, selectedSubMode = null, aiDifficulty = 'normal', aiTimeout,
+                skills, targetingState = null, eventManager, interdictedCellIndex = -1,
+                savedPlayerName = '', currentScreenElement = null, playerSkillKit = [];
+        
+            let playerXAvatar = { ...DEFAULT_AVATAR_X };
+            let playerOAvatar = { ...DEFAULT_AVATAR_O };
+        
+            // --- MUSIC AND NAVIGATION CONTROL ---
+            function playMenuMusic() { stopBattleMusic(); if (menuMusic.paused) menuMusic.play().catch(() => {}); }
+            function stopMenuMusic() { menuMusic.pause(); menuMusic.currentTime = 0; }
+            function playBattleMusic() { stopMenuMusic(); if (battleMusic.paused) battleMusic.play().catch(() => {}); }
+            function stopBattleMusic() { battleMusic.pause(); battleMusic.currentTime = 0; }
+            
+            function updateMusic(currentScreen) {
+                if (currentScreen === gameScreen) {
+                    stopMenuMusic();
+                    playBattleMusic();
+                    historyToggleButton.classList.add('visible');
+                } else {
+                    stopBattleMusic();
+                    playMenuMusic();
+                    historyToggleButton.classList.remove('visible');
+                    historyPanel.classList.remove('show');
+                }
+            }
+        
+            function showScreen(screenToShow, direction = 'forward') {
+                if (currentScreenElement && currentScreenElement !== screenToShow) {
+                    const outClass = direction === 'forward' ? 'slide-out-to-left' : 'slide-out-to-right';
+                    currentScreenElement.classList.remove('active');
+                    currentScreenElement.classList.add(outClass);
+                    currentScreenElement.addEventListener('animationend', () => {
+                        currentScreenElement.classList.remove(outClass);
+                    }, { once: true });
+                }
+        
+                const inClass = direction === 'forward' ? 'slide-in-from-right' : 'slide-in-from-left';
+                screenToShow.classList.remove('slide-out-to-left', 'slide-out-to-right');
+                screenToShow.classList.add('active', inClass);
+                screenToShow.addEventListener('animationend', () => {
+                    screenToShow.classList.remove(inClass);
+                }, { once: true });
+        
+                currentScreenElement = screenToShow;
+                updateMusic(screenToShow);
+                winningMessageElement.classList.remove('show');
+            }
+            
+            // --- HELPER FUNCTIONS ---
+            function playSound(sound) { if(sound) { sound.currentTime = 0; sound.play().catch(e => {}); } }
+        
+            function showNotification(message) {
+                console.log(`Mostrando notificação: "${message}"`);
+                notificationText.innerHTML = message.replace(/\n/g, '<br>');
+                notificationModal.classList.add('show');
+            }
+            
+            function getRandomSkills(pool, count) {
+                const shuffled = [...pool].sort(() => 0.5 - Math.random());
+                return shuffled.slice(0, count);
+            }
+
+            function logAction(message, playerClass = 'system-log') {
+                const logEntry = document.createElement('div');
+                logEntry.classList.add('log-entry', playerClass);
+                logEntry.innerHTML = message;
+                historyLogContent.prepend(logEntry);
+            }
+        
+            // --- ARSENAL AND PROFILE LOGIC ---
+            function loadArsenalData() {
+                console.log("Carregando dados do Arsenal...");
+                savedPlayerName = localStorage.getItem('arenaPlayerName');
+                const savedAvatarJSON = localStorage.getItem('arenaPlayerAvatar');
+                const savedKitJSON = localStorage.getItem('arenaPlayerKit');
+        
+                if (savedPlayerName) {
+                    console.log("Perfil encontrado:", savedPlayerName);
+                    playerXAvatar = savedAvatarJSON ? JSON.parse(savedAvatarJSON) : { ...DEFAULT_AVATAR_X };
+                    playerSkillKit = savedKitJSON ? JSON.parse(savedKitJSON) : ['bomb', 'heal'];
+                    
+                    arsenalPlayerNameInput.value = savedPlayerName;
+                    applyAvatar(arsenalCharPreview, playerXAvatar);
+                    populateArsenalScreen();
+                    
+                    currentScreenElement = modeSelectMenu;
+                    currentScreenElement.classList.add('active');
+                } else {
+                    console.log("Nenhum perfil salvo encontrado. Indo para a criação.");
+                    playerSkillKit = ['bomb', 'heal']; 
+                    applyAvatar(arsenalCharPreview, playerXAvatar);
+                    populateArsenalScreen();
+                    currentScreenElement = arsenalScreen;
+                    currentScreenElement.classList.add('active');
+                }
+                updateMusic(currentScreenElement);
+            }
+            
+            function populateArsenalScreen() {
+                console.log("Populando a tela do arsenal com o kit:", playerSkillKit);
+                skillDeckGrid.innerHTML = '';
+                playerKitSlots.innerHTML = '';
+        
+                for (const skillId in ALL_SKILLS) {
+                    const skill = ALL_SKILLS[skillId];
+                    const card = document.createElement('div');
+                    card.className = 'skill-card';
+                    card.dataset.skillId = skill.id;
+                    card.innerHTML = `<div class="skill-icon">${skill.icon}</div><div class="skill-name">${skill.name}</div>`;
+                    card.title = skill.description;
+                    
+                    if (playerSkillKit.includes(skill.id)) card.classList.add('selected');
+                    
+                    card.addEventListener('click', () => handleSkillSelection(skill.id));
+                    skillDeckGrid.appendChild(card);
+                }
+                
+                for(let i = 0; i < MAX_SKILL_KIT_SIZE; i++) {
+                    const kitSlot = document.createElement('div');
+                    kitSlot.className = 'kit-slot';
+                    const skillId = playerSkillKit[i];
+                    if (skillId) {
+                        const skill = ALL_SKILLS[skillId];
+                        kitSlot.innerHTML = `<div class="skill-card selected" title="${skill.description}">
+                                                    <div class="skill-icon">${skill.icon}</div>
+                                                    <div class="skill-name">${skill.name}</div>
+                                                </div>`;
+                    }
+                    playerKitSlots.appendChild(kitSlot);
+                }
+            }
+            
+            function handleSkillSelection(skillId) {
+                console.log(`Tentando selecionar a habilidade: ${skillId}`);
+                const skillIndex = playerSkillKit.indexOf(skillId);
+        
+                if (skillIndex > -1) {
+                    playerSkillKit.splice(skillIndex, 1);
+                    console.log(`Habilidade '${skillId}' removida. Kit atual:`, playerSkillKit);
+                } else {
+                    if (playerSkillKit.length >= MAX_SKILL_KIT_SIZE) {
+                        console.warn(`Kit está cheio! Não foi possível adicionar '${skillId}'.`);
+                        showNotification("Seu kit já tem 2 habilidades. Remova uma para adicionar outra.");
+                        return;
+                    }
+                    playerSkillKit.push(skillId);
+                    console.log(`Habilidade '${skillId}' adicionada. Kit atual:`, playerSkillKit);
+                }
+                populateArsenalScreen();
+            }
+            
+            function saveArsenalAndProceed() {
+                console.log("Tentando salvar e prosseguir...");
+                const name = arsenalPlayerNameInput.value.trim();
+                const isKitFull = playerSkillKit.length === MAX_SKILL_KIT_SIZE;
+        
+                if (name && isKitFull) {
+                    console.log("Validação OK. Salvando dados.");
+                    savedPlayerName = name;
+                    localStorage.setItem('arenaPlayerName', name);
+                    localStorage.setItem('arenaPlayerAvatar', JSON.stringify(playerXAvatar));
+                    localStorage.setItem('arenaPlayerKit', JSON.stringify(playerSkillKit));
+                    showScreen(modeSelectMenu, 'forward');
+                } else {
+                    let alertMessage = 'Não foi possível prosseguir:\n\n';
+                    if (!name) {
+                        alertMessage += '• Por favor, digite seu nome de jogador.\n';
+                        console.error("Erro de validação: Nome não preenchido.");
+                    }
+                    if (!isKitFull) {
+                        alertMessage += `• Seu kit precisa ter exatamente ${MAX_SKILL_KIT_SIZE} habilidades.`;
+                        console.error(`Erro de validação: Kit não tem ${MAX_SKILL_KIT_SIZE} habilidades. Atual: ${playerSkillKit.length}`);
+                    }
+                    showNotification(alertMessage);
+                }
+            }
+            
+            // --- CORE GAME LOGIC (High-level functions) ---
+            function initializeMatch() {
+                console.log("Inicializando partida com o kit:", playerSkillKit);
+                isGameActive = true;
+                healthX = 100; healthO = 100;
+                isOTurn = false; movesX = []; movesO = [];
+                targetingState = null;
+                interdictedCellIndex = -1;
+
+                historyLogContent.innerHTML = ''; // Clear previous history
+                logAction('A batalha começou!');
+        
+                charX.className = 'character'; charO.className = 'character';
+                charX.style.removeProperty('--player-color'); charO.style.removeProperty('--player-color');
+        
+                clearInterval(drainInterval); clearTimeout(aiTimeout);
+                if(eventManager) eventManager.stop();
+                eventManager = null;
+                drainInterval = setInterval(drainHealth, 1000);
+                
+                boardElement.className = 'board';
+                boardElement.innerHTML = '';
+                for(let i = 0; i < 9; i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.cellIndex = i;
+                    boardElement.appendChild(cell);
+                }
+                cellElements = Array.from(boardElement.querySelectorAll('.cell'));
+        
+                const clickHandler = {
+                    'local': handleLocalClick, 'single': handleVsAiClick,
+                    'tatico': handleTaticoClick, 'caotico': handleCaoticClick,
+                    'tatico_single': handleTaticoClick, 
+                    'caotico_single': handleCaoticClick
+                }[gameMode];
+        
+                cellElements.forEach(cell => cell.addEventListener('click', clickHandler));
+                
+                setupGameUI();
+                updateHealthBars();
+                updateOldestPieceIndicator();
+        
+                winningLaserLine.classList.remove('winning-laser-active');
+                boardElement.classList.remove('dimmed-board');
+                cellElements.forEach(cell => {
+                    cell.classList.remove('winning-cell-pulse');
+                    cell.style.removeProperty('--pulse-color');
+                });
+        
+                setTimeout(showTurnAnnouncement, 500);
+            }
+        
+            function setupGameUI() {
+                const isVsAi = gameMode.includes('single');
+                gamePlayerLabelX.innerText = savedPlayerName || 'Jogador X';
+        
+                if (isVsAi) {
+                    playerNameOInput.value = `Máquina (${aiDifficulty})`;
+                    playerOAvatar = { type: 'emoji', value: '🤖' };
+                } else {
+                    // For local multiplayer, use the input name or default.
+                    if (!playerNameOInput.value) playerNameOInput.value = 'Jogador O';
+                }
+                gamePlayerLabelO.innerText = playerNameOInput.value;
+        
+                applyAvatar(charX, playerXAvatar);
+                applyAvatar(charO, playerOAvatar);
+        
+                const isTatic = gameMode.startsWith('tatico');
+                skillsMainContainer.classList.toggle('show', isTatic);
+                skillsOContainer.style.visibility = 'visible';
+        
+                if (isTatic) {
+                    skills = {
+                        x: { shieldActive: false, damageBoostActive: false, mirrorActive: false },
+                        o: { shieldActive: false, damageBoostActive: false, mirrorActive: false }
+                    };
+                    playerSkillKit.forEach(skillId => { skills.x[skillId] = true; });
+        
+                    if (isVsAi) {
+                        let numberOfAiSkills = 2; // Normal
+                        if (aiDifficulty === 'hard') numberOfAiSkills = 3;
+                        else if (aiDifficulty === 'easy') numberOfAiSkills = 1;
+
+                        const aiSkillsList = getRandomSkills(AI_SKILL_POOL, numberOfAiSkills);
+                        aiSkillsList.forEach(skillId => {
+                            if (ALL_SKILLS[skillId]) skills.o[skillId] = true;
+                        });
+                        console.log("Kit da IA sorteado:", aiSkillsList);
+                        logAction(`A IA entra na batalha com as habilidades: ${aiSkillsList.map(id => ALL_SKILLS[id].icon).join(' ')}`);
+
+                    } else { // Local Multiplayer Tatic
+                        // For simplicity, Player O has a fixed kit.
+                        // Could be expanded to have its own arsenal screen.
+                        ['bomb', 'heal', 'shield'].forEach(skillId => {
+                            skills.o[skillId] = true;
+                        });
+                    }
+                    
+                    setupSkillButtons();
+                }
+        
+                if (gameMode.startsWith('caotico')) {
+                    eventManager = new ArenaEventManager();
+                    eventManager.triggerRandomEvent();
+                }
+                updateTurnIndicator();
+            }
+        
+            function setupSkillButtons() {
+                skillsXContainer.innerHTML = '';
+                skillsOContainer.innerHTML = '';
+        
+                playerSkillKit.forEach(skillId => {
+                    const skill = ALL_SKILLS[skillId];
+                    if (!skill) return;
+        
+                    const button = document.createElement('button');
+                    button.className = 'skill-button';
+                    button.innerHTML = skill.icon;
+                    
+                    if (skill.type === 'active') {
+                        button.id = `${skill.id}-x`;
+                        button.title = skill.name;
+                        if (skill.implemented) {
+                           button.addEventListener('click', () => {
+                                const skillActions = {
+                                    'bomb': () => activateBomb(X_CLASS, 'bomb'),
+                                    'heal': () => activateHeal(X_CLASS, 'heal'),
+                                    'shield': () => activateShield(X_CLASS, 'shield'),
+                                    'sacrifice': () => activateSacrifice(X_CLASS, 'sacrifice'),
+                                    'mirror': () => activateMirror(X_CLASS, 'mirror'),
+                                    'swap': () => activateSwap(X_CLASS, 'swap'),
+                                    'shove': () => activateShove(X_CLASS, 'shove'),
+                                };
+                                skillActions[skill.id]?.();
+                           });
+                        } else {
+                            button.disabled = true;
+                        }
+                    } else { 
+                        button.id = `${skill.id}-indicator-x`;
+                        button.title = `${skill.name} (Passiva)`;
+                        button.disabled = true;
+                    }
+                    skillsXContainer.appendChild(button);
+                });
+                
+                Object.keys(skills.o).forEach(skillId => {
+                    if (skills.o[skillId] === true) { 
+                        const skill = ALL_SKILLS[skillId];
+                        if (!skill) return;
+        
+                        const button = document.createElement('button');
+                        button.id = `${skill.id}-o`;
+                        button.className = 'skill-button';
+                        button.innerHTML = skill.icon;
+                        button.title = skill.name;
+                        button.disabled = true; 
+                        
+                        skillsOContainer.appendChild(button);
+                    }
+                });
+                
+                updateSkillButtonsState();
+            }
+            
+            function drainHealth() {
+                if (!isGameActive) return;
+                if (isOTurn) { if (healthO > 0) healthO = Math.max(0, healthO - HEALTH_DRAIN_PER_SECOND); }
+                else { if (healthX > 0) healthX = Math.max(0, healthX - HEALTH_DRAIN_PER_SECOND); }
+                updateHealthBars();
+                if (healthX <= 0 || healthO <= 0) endGame();
+            }
+            
+            function clearInterdiction() {
+                if (interdictedCellIndex !== -1) {
+                    const interdictedCell = cellElements[interdictedCellIndex];
+                    if (interdictedCell) interdictedCell.classList.remove('interdicted');
+                    interdictedCellIndex = -1;
+                    logAction("Interdição da célula removida.", 'system-log');
+                }
+            }
+        
+            function showTurnAnnouncement() {
+                if (!isGameActive) return;
+                const currentPlayerName = isOTurn ? (playerNameOInput.value || 'Jogador O') : (savedPlayerName || 'Jogador X');
+                turnAnnouncementText.textContent = `Turno de ${currentPlayerName}`;
+                turnAnnouncementContainer.classList.add('show');
+                turnAnnouncementContainer.addEventListener('animationend', () => {
+                    turnAnnouncementContainer.classList.remove('show');
+                }, { once: true });
+            }
+        
+            function applyDamageEffects(winnerClass, damage) {
+                if (winnerClass === X_CLASS) healthO = Math.max(0, healthO - damage);
+                else healthX = Math.max(0, healthX - damage);
+        
+                updateHealthBars();
+                
+                if (healthX <= 0 || healthO <= 0) {
+                    endGame();
+                } else {
+                    const healthBgToAnimate = winnerClass === X_CLASS ? healthBgO : healthBgX;
+                    healthBgToAnimate.classList.add('damage');
+                    setTimeout(() => healthBgToAnimate.classList.remove('damage'), 500);
+        
+                    playSound(attackSound);
+                    setTimeout(() => {
+                        playSound(hitSound);
+                        triggerAnimation(winnerClass === X_CLASS ? charX : charO, winnerClass === X_CLASS ? charO : charX, winnerClass === X_CLASS);
+                        if (isGameActive) {
+                            swapTurns();
+                        }
+                    }, 300);
+                }
+            }
+        
+            function swapTurns() {
+                // --- MUDANÇA FINAL: O MOTOR COMPLETO DOS EVENTOS CAÓTICOS ---
+                if (gameMode.startsWith('caotico') && eventManager) {
+                    let eventExpired = false;
+
+                    // 1. Gerencia Mina Terrestre (se expirar)
+                    if (eventManager.minedCell.turnsLeft > 0) {
+                        eventManager.minedCell.turnsLeft--;
+                        if (eventManager.minedCell.turnsLeft === 0) {
+                            logAction('A Mina Terrestre 💥 não foi ativada e se dissipou.', 'system-log');
+                            eventExpired = true;
+                        }
+                    }
+                    // 2. Gerencia Célula Amaldiçoada (se expirar)
+                    if (!eventExpired && eventManager.cursedCell.turnsLeft > 0) {
+                        eventManager.cursedCell.turnsLeft--;
+                        if (eventManager.cursedCell.turnsLeft === 0) {
+                            logAction('A Célula Amaldiçoada se dissipou.', 'system-log');
+                            eventExpired = true;
+                        }
+                    }
+                    // 3. Gerencia Portais (se expirarem)
+                    if (!eventExpired && eventManager.portals.turnsLeft > 0) {
+                        eventManager.portals.turnsLeft--;
+                        if (eventManager.portals.turnsLeft === 0) {
+                            logAction('Os portais 🌀 se fecharam.', 'system-log');
+                            eventExpired = true;
+                        }
+                    }
+                    // 4. Gerencia o Buraco Negro
+                    if (!eventExpired && eventManager.blackHole.turnsLeft > 0) {
+                        eventManager.blackHole.turnsLeft--;
+                        if (eventManager.blackHole.turnsLeft === 0) {
+                            logAction('O Buraco Negro ⚫ se dissipou.', 'system-log');
+                            eventExpired = true;
+                        }
+                    }
+                    // 5. Gerencia a Névoa de Batalha
+                    if (!eventExpired && eventManager.foggyCells.length > 0) {
+                        if (eventManager.foggyCells.turnCreated === undefined) {
+                            eventManager.foggyCells.turnCreated = isOTurn;
+                        } else if (eventManager.foggyCells.turnCreated !== isOTurn) {
+                             logAction('A Névoa de Batalha 🌫️ se dissipou!', 'system-log');
+                             eventExpired = true;
+                        }
+                    }
+                    // 6. Gerencia a Inversão de Poder
+                    if (!eventExpired && eventManager.powerInversionActive) {
+                         if (eventManager.powerInversionTurn === undefined) {
+                            eventManager.powerInversionTurn = !isOTurn;
+                         } else if (eventManager.powerInversionTurn === !isOTurn) {
+                             logAction('O efeito da Inversão de Poder ⚡ acabou.', 'system-log');
+                             eventExpired = true;
+                         }
+                    }
+                    
+                    if(eventExpired) {
+                        eventManager.consumeAndRefresh();
+                    } else if (eventManager.meteorShowerActive) {
+                        const METEOR_CHANCE = 0.2; // 20%
+                        if (Math.random() < METEOR_CHANCE) {
+                            const allPieces = [...movesX, ...movesO];
+                            if (allPieces.length > 0) {
+                                const pieceToDestroy = allPieces[Math.floor(Math.random() * allPieces.length)];
+                                const pieceIndex = parseInt(pieceToDestroy.dataset.cellIndex);
+                                const wasX = pieceToDestroy.classList.contains(X_CLASS);
+
+                                logAction(`Um meteoro ☄️ caiu e destruiu a peça na casa ${pieceIndex + 1}!`, 'system-log');
+                                playSound(bombSound);
+
+                                if (wasX) {
+                                    movesX = movesX.filter(c => c !== pieceToDestroy);
+                                } else {
+                                    movesO = movesO.filter(c => c !== pieceToDestroy);
+                                }
+                                
+                                pieceToDestroy.classList.remove(X_CLASS, O_CLASS, 'oldest-piece');
+                                updateOldestPieceIndicator();
+                            }
+                        }
+                    }
+                }
+
+                // Lógica original da função
+                isOTurn = !isOTurn;
+                updateTurnIndicator();
+                showTurnAnnouncement();
+                if (isGameActive && isOTurn && gameMode.includes('single')) {
+                    triggerAiTurn();
+                }
+            }
+            
+            function triggerAnimation(attacker, defender, isXAttacking) {
+                const attackDir = isXAttacking ? '30px' : '-30px';
+                const hitDir = isXAttacking ? '-15px' : '15px';
+                attacker.style.setProperty('--translate-x', attackDir);
+                defender.style.setProperty('--translate-x', hitDir);
+                attacker.classList.add('attack');
+                defender.classList.add('hit');
+                setTimeout(() => {
+                    attacker.classList.remove('attack');
+                    defender.classList.remove('hit');
+                }, 600);
+            }
+        
+            function handleDamage(winnerClass, damage = DAMAGE_PER_POINT, winningCombo = null) {
+                const defenderClass = winnerClass === X_CLASS ? O_CLASS : X_CLASS;
+                const defenderSkills = defenderClass === X_CLASS ? skills.x : skills.o;
+                let finalDamage = damage;
+                
+                logAction(`PONTO PARA ${winnerClass.toUpperCase()}!`, `player-${winnerClass}-log`);
+
+                if (gameMode.startsWith('tatico') && defenderSkills.shieldActive) {
+                    console.log(`Ataque de ${winnerClass} bloqueado pelo escudo de ${defenderClass}.`);
+                    logAction(`Escudo 🛡️ de ${defenderClass.toUpperCase()} bloqueia o ataque!`, `player-${defenderClass}-log`);
+                    playSound(shieldSound);
+                    defenderSkills.shieldActive = false;
+                    const defenderChar = defenderClass === X_CLASS ? charX : charO;
+                    defenderChar.classList.remove('shielded');
+                    updateSkillButtonsState();
+                    setTimeout(() => swapTurns(), 500);
+                    return;
+                }
+                
+                const attackerSkills = winnerClass === X_CLASS ? skills.x : skills.o;
+                if (attackerSkills.damageBoostActive) {
+                    finalDamage = DAMAGE_PER_POINT * 2;
+                    console.log(`Sacrifício! ${winnerClass} causa dano dobrado: ${finalDamage}`);
+                    logAction(`Dano de Sacrifício 💀! Ataque de ${winnerClass.toUpperCase()} causa ${finalDamage} de dano!`, `player-${winnerClass}-log`);
+                    attackerSkills.damageBoostActive = false;
+                    const attackerChar = winnerClass === X_CLASS ? charX : charO;
+                    attackerChar.classList.remove('damage-boost');
+                } else {
+                    if (gameMode.startsWith('caotico') && eventManager && eventManager.powerInversionActive) {
+                        const attackerHealth = winnerClass === X_CLASS ? healthX : healthO;
+                        const defenderHealth = winnerClass === X_CLASS ? healthO : healthX;
+                        if (attackerHealth < defenderHealth) {
+                            finalDamage *= 1.5; // 50% bonus
+                            logAction(`Inversão de Poder ⚡! ${winnerClass.toUpperCase()} causa dano aumentado: ${finalDamage.toFixed(0)}!`, `player-${winnerClass}-log`);
+                        }
+                    }
+                    if(!attackerSkills.damageBoostActive) {
+                        logAction(`${winnerClass.toUpperCase()} causa ${finalDamage.toFixed(0)} de dano.`, `player-${winnerClass}-log`);
+                    }
+                }
+        
+                if (attackerSkills.vampirism) {
+                    const healAmount = finalDamage * 0.5;
+                    console.log(`${winnerClass} usa Vampirismo e cura ${healAmount} de vida.`);
+                    logAction(`Vampirismo 🩸 cura ${winnerClass.toUpperCase()} em ${healAmount.toFixed(0)} pontos.`, `player-${winnerClass}-log`);
+                    if(winnerClass === X_CLASS) {
+                        healthX = Math.min(100, healthX + healAmount);
+                    } else {
+                        healthO = Math.min(100, healthO + healAmount);
+                    }
+                    playSound(healSound);
+                    updateHealthBars();
+                }
+                
+                if (winningCombo) {
+                    boardElement.classList.add('locked', 'dimmed-board');
+                    
+                    const winnerColor = winnerClass === X_CLASS ?
+                        getComputedStyle(document.documentElement).getPropertyValue('--cor-x') :
+                        getComputedStyle(document.documentElement).getPropertyValue('--cor-o');
+                    winningCombo.forEach(index => {
+                        const cell = cellElements[index];
+                        cell.classList.add('winning-cell-pulse');
+                        cell.style.setProperty('--pulse-color', winnerColor);
+                    });
+                    
+                    drawWinningLaserLine(winnerClass, winningCombo);
+                    
+                    setTimeout(() => {
+                        boardElement.classList.remove('dimmed-board', 'locked');
+                        winningLaserLine.classList.remove('winning-laser-active');
+                        winningCombo.forEach(index => {
+                            cellElements[index].classList.remove('winning-cell-pulse');
+                            cellElements[index].style.removeProperty('--pulse-color');
+                        });
+                        applyDamageEffects(winnerClass, finalDamage);
+                    }, 1500);
+                } else {
+                    applyDamageEffects(winnerClass, finalDamage);
+                }
+            }
+        
+            function endGame() {
+                isGameActive = false;
+                stopBattleMusic();
+                clearInterval(drainInterval); clearTimeout(aiTimeout);
+                if(eventManager) eventManager.stop();
+                playSound(victorySound);
+                
+                const winner = healthO <= 0 ? charX : charO;
+                const loser = healthO <= 0 ? charO : charX;
+                const winnerColor = healthO <= 0 ? 'var(--cor-x)' : 'var(--cor-o)';
+                const winnerClass = healthO <= 0 ? 'x' : 'o';
+                
+                winner.style.setProperty('--winner-color', winnerColor);
+                winner.classList.add('victory');
+                loser.classList.add('defeat');
+                
+                const winnerName = healthO <= 0 ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                winningMessageTextElement.innerText = `${winnerName} venceu!`;
+                logAction(`<strong>FIM DE JOGO! ${winnerName} é o vencedor!</strong>`, `player-${winnerClass}-log`);
+                winningMessageElement.classList.add('show');
+                healthContainerX.classList.remove('active');
+                healthContainerO.classList.remove('active');
+                charX.classList.remove('turn-active');
+                charO.classList.remove('turn-active');
+                boardElement.classList.add('locked');
+                
+                winningLaserLine.classList.remove('winning-laser-active');
+                boardElement.classList.remove('dimmed-board');
+                cellElements.forEach(cell => {
+                    cell.classList.remove('winning-cell-pulse');
+                    cell.style.removeProperty('--pulse-color');
+                });
+            }
+        
+            function updateTurnIndicator() {
+                healthContainerX.classList.toggle('active', !isOTurn);
+                healthContainerO.classList.toggle('active', isOTurn);
+                
+                charX.classList.toggle('turn-active', !isOTurn);
+                charO.classList.toggle('turn-active', isOTurn);
+                
+                if (!isOTurn) {
+                    charX.style.setProperty('--player-color', 'var(--cor-x)');
+                } else {
+                    charO.style.setProperty('--player-color', 'var(--cor-o)');
+                }
+                
+                if(gameMode && gameMode.startsWith('tatico')) updateSkillButtonsState();
+            }
+        
+            function updateHealthBars() {
+                healthBarX.style.width = `${healthX}%`;
+                healthBarO.style.width = `${healthO}%`;
+            }
+        
+            function checkWin(currentClass, currentMoves) {
+                const playerMoves = currentMoves.map(el => parseInt(el.dataset.cellIndex));
+                if (playerMoves.length < 3) return { hasWon: false, combo: null };
+                for (const combo of WINNING_COMBINATIONS) {
+                    if (combo.every(i => playerMoves.includes(i))) {
+                        return { hasWon: true, combo: combo };
+                    }
+                }
+                return { hasWon: false, combo: null };
+            }
+        
+            function placeMark(cell, currentClass) {
+                playSound(clickSound);
+                const currentMoves = currentClass === X_CLASS ? movesX : movesO;
+                const playerName = currentClass === X_CLASS ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                logAction(`${playerName} marca a casa ${parseInt(cell.dataset.cellIndex) + 1}.`, `player-${currentClass}-log`);
+        
+                clearInterdiction();
+        
+                if (currentMoves.length >= MAX_MOVES) {
+                    const oldestCell = currentMoves.shift();
+                    oldestCell.classList.remove(X_CLASS, O_CLASS);
+                    const oldParticle = oldestCell.querySelector('.particle-effect');
+                    if (oldParticle) oldParticle.remove();
+                }
+        
+                const particleDiv = document.createElement('div');
+                particleDiv.classList.add('particle-effect');
+                const particleColor = currentClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)';
+                particleDiv.style.setProperty('--particle-color', particleColor);
+                cell.appendChild(particleDiv);
+                
+                particleDiv.addEventListener('animationend', () => {
+                    particleDiv.remove();
+                }, { once: true });
+                
+                cell.classList.add(currentClass);
+                currentMoves.push(cell);
+        
+                updateOldestPieceIndicator();
+        
+                const winResult = checkWin(currentClass, currentMoves);
+                if (winResult.hasWon) {
+                    handleDamage(currentClass, DAMAGE_PER_POINT, winResult.combo);
+                } else if(isGameActive) {
+                    swapTurns();
+                }
+            }
+        
+            function triggerAiTurn() {
+                if (isGameActive && isOTurn && gameMode.includes('single')) {
+                    boardElement.classList.add('locked');
+                    const aiMoveHandler = gameMode === 'tatico_single' ? aiMoveTatico :
+                                          gameMode === 'caotico_single' ? aiMoveCaotico :
+                                          aiMoveStandard;
+                    aiTimeout = setTimeout(aiMoveHandler, 1000 + Math.random() * 500);
+                }
+            }
+        
+            function handleVsAiClick(e) {
+                if (isOTurn || !isGameActive) return;
+                
+                if(gameMode.includes('tatico') || gameMode.includes('caotico')) {
+                    handleTaticoClick(e);
+                    return;
+                }
+                
+                const currentClass = X_CLASS;
+                const cell = e.target;
+                if (!isGameActive || cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS) || cell.classList.contains('interdicted')) return;
+                placeMark(cell, currentClass);
+            }
+        
+            function handleLocalClick(e) {
+                const cell = e.target;
+                if (!isGameActive || cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS) || cell.classList.contains('interdicted')) return;
+                
+                const currentClass = isOTurn ? O_CLASS : X_CLASS;
+                
+                placeMark(cell, currentClass);
+            }
+            
+            function handleTaticoClick(e) {
+                const cell = e.target;
+                if (targetingState) {
+                    if (cell.classList.contains('targetable')) {
+                        switch (targetingState.skill) {
+                            case 'bomb':
+                                handleBombExecution(cell);
+                                break;
+                            case 'sacrifice':
+                                handleSacrificeExecution(cell);
+                                break;
+                            case 'swap':
+                                if (targetingState.firstPick === null) {
+                                    targetingState.firstPick = cell;
+                                    cell.classList.add('swap-first-pick');
+                                    cell.classList.remove('targetable');
+                                } else {
+                                    handleSwapExecution(targetingState.firstPick, cell);
+                                }
+                                break;
+                            case 'shove':
+                                if (targetingState.pieceToPush === null) {
+                                    targetingState.pieceToPush = cell;
+                                    cell.classList.add('swap-first-pick');
+                                    
+                                    const sourceIndex = parseInt(cell.dataset.cellIndex);
+                                    const adjacentIndexes = getAdjacentCells(sourceIndex);
+                                    
+                                    cellElements.forEach(c => c.classList.remove('targetable'));
+                                    
+                                    let hasValidTarget = false;
+                                    adjacentIndexes.forEach(index => {
+                                        const adjacentCell = cellElements[index];
+                                        if (!adjacentCell.classList.contains(X_CLASS) && !adjacentCell.classList.contains(O_CLASS)) {
+                                            adjacentCell.classList.add('targetable');
+                                            hasValidTarget = true;
+                                        }
+                                    });
+
+                                    if (!hasValidTarget) {
+                                        showNotification("Nenhum espaço adjacente válido para empurrar esta peça.");
+                                        logAction("Tentativa de Empurrão falhou: sem alvos.", `player-${isOTurn ? 'o' : 'x'}-log`);
+                                        resetTargetingMode();
+                                        return;
+                                    }
+                                    console.log("Peça selecionada. Agora selecione uma casa vazia adjacente.");
+                                } 
+                                else {
+                                    handleShoveExecution(targetingState.pieceToPush, cell);
+                                }
+                                break;
+                        }
+                    }
+                    return; 
+                }
+        
+                const cellIndex = parseInt(cell.dataset.cellIndex);
+                if (!isGameActive || cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS) || cellIndex === interdictedCellIndex) {
+                    return;
+                }
+                const currentClass = isOTurn ? O_CLASS : X_CLASS;
+                placeMark(cell, currentClass);
+            }
+        
+            function handleCaoticClick(e) {
+                const cell = e.target;
+                if (!isGameActive || cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS) || cell.classList.contains('black-hole')) return;
+
+                playSound(clickSound);
+                const currentClass = isOTurn ? O_CLASS : X_CLASS;
+                let targetCell = cell;
+
+                // --- MUDANÇA: Usando a nova estrutura de objetos do eventManager ---
+                if (eventManager && eventManager.hasActiveEvent) {
+                    
+                    if (eventManager.isCursed(cell)) {
+                        healthX = Math.max(0, healthX - 10);
+                        healthO = Math.max(0, healthO - 10);
+                        updateHealthBars();
+                        logAction(`Ambos os jogadores tocaram na Célula Amaldiçoada e perderam 10 de vida!`, 'system-log');
+                        eventManager.consumeAndRefresh();
+                        if (isGameActive) {
+                            if (healthX <= 0 || healthO <= 0) endGame();
+                            else swapTurns();
+                        }
+                        return; // O turno é consumido
+                    } 
+                    
+                    else if (eventManager.isMined(cell)) {
+                        eventManager.triggerMine(currentClass); // triggerMine agora chama consumeAndRefresh
+                        if (isGameActive) swapTurns();
+                        return; // O turno é consumido
+                    } 
+                    
+                    else if (cell.classList.contains('portal')) {
+                        const otherPortal = eventManager.getOtherPortal(cell);
+                        if (otherPortal && !otherPortal.classList.contains(X_CLASS) && !otherPortal.classList.contains(O_CLASS)) {
+                            playSound(teleportSound);
+                            logAction(`${currentClass.toUpperCase()} entrou num portal e saiu na casa ${parseInt(otherPortal.dataset.cellIndex) + 1}!`, `player-${currentClass}-log`);
+                            targetCell = otherPortal;
+                            eventManager.consumeAndRefresh();
+                            placeMark(targetCell, currentClass); // Coloca a marca e troca o turno
+                            return; // O turno é consumido
+                        }
+                    }
+                }
+                
+                // Se nenhum evento foi consumido, apenas coloca a marca.
+                placeMark(targetCell, currentClass); 
+            }
+            
+            function wouldWin(playerClass, moveCell, currentMoves) {
+                const tempMoves = [...currentMoves, moveCell];
+                if (tempMoves.length > MAX_MOVES) tempMoves.shift();
+                if (tempMoves.length < 3) return false;
+                let tempIndexes = tempMoves.map(el => parseInt(el.dataset.cellIndex));
+                return WINNING_COMBINATIONS.some(combo => combo.every(i => tempIndexes.includes(i)));
+            }
+            
+            function aiMoveStandard() {
+                const availableCells = cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && !c.classList.contains('interdicted'));
+                if(availableCells.length === 0) {
+                    swapTurns(); 
+                    boardElement.classList.remove('locked');
+                    return;
+                }
+                let bestMoveCell = null;
+                
+                if (aiDifficulty !== 'easy') {
+                    for(const cell of availableCells) { if(wouldWin(O_CLASS, cell, movesO)) { bestMoveCell = cell; break; } }
+                    if(!bestMoveCell) { for(const cell of availableCells) { if(wouldWin(X_CLASS, cell, movesX)) { bestMoveCell = cell; break; } } }
+                    if (!bestMoveCell && aiDifficulty === 'hard') {
+                        const center = cellElements[4];
+                        if (availableCells.includes(center)) bestMoveCell = center;
+                        else {
+                            const corners = [0, 2, 6, 8].map(i => cellElements[i]).filter(c => availableCells.includes(c));
+                            if(corners.length > 0) bestMoveCell = corners[Math.floor(Math.random() * corners.length)];
+                        }
+                    }
+                }
+                if(!bestMoveCell) bestMoveCell = availableCells[Math.floor(Math.random() * availableCells.length)];
+                
+                if(bestMoveCell) {
+                    placeMark(bestMoveCell, O_CLASS);
+                } else {
+                    if (isGameActive) swapTurns();
+                }
+                boardElement.classList.remove('locked');
+            }
+        
+            function aiMoveTatico() {
+                const action = getAiTaticoDecision();
+                
+                switch (action.type) {
+                    case 'move':
+                        placeMark(action.cell, O_CLASS);
+                        break;
+                    case 'skill_heal':
+                        activateHeal(O_CLASS, 'heal'); 
+                        break;
+                    case 'skill_shield':
+                        activateShield(O_CLASS, 'shield'); 
+                        break;
+                    case 'skill_bomb':
+                        handleBombExecution(action.target);
+                        break;
+                    case 'skill_sacrifice':
+                        handleSacrificeExecution(action.target);
+                        break;
+                    case 'skill_mirror':
+                        activateMirror(O_CLASS, 'mirror');
+                        break;
+                    case 'skill_swap':
+                        handleSwapExecution(action.targets[0], action.targets[1]);
+                        break;
+                    case 'skill_shove':
+                        handleShoveExecution(action.source, action.destination);
+                        break;
+                    case 'pass':
+                    default:
+                        swapTurns();
+                        break;
+                }
+                boardElement.classList.remove('locked');
+            }
+            
+            function getAiTaticoDecision() {
+                const availableCells = cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && c.dataset.cellIndex != interdictedCellIndex && !c.classList.contains('black-hole'));
+                const opponentPieces = cellElements.filter(c => c.classList.contains(X_CLASS));
+                const aiPieces = cellElements.filter(c => c.classList.contains(O_CLASS));
+                const allPieces = [...opponentPieces, ...aiPieces];
+                const aiSkills = skills.o;
+
+                if (aiDifficulty === 'easy' && availableCells.length > 0) {
+                    return { type: 'move', cell: availableCells[Math.floor(Math.random() * availableCells.length)] };
+                }
+
+                // AI Decision Hierarchy
+                const winningMove = availableCells.find(cell => wouldWin(O_CLASS, cell, movesO));
+                if (winningMove) {
+                    return { type: 'move', cell: winningMove };
+                }
+                if (aiSkills.shove && allPieces.length > 0) {
+                    for (const pieceToPush of allPieces) {
+                        const adjacentEmptyCells = getAdjacentCells(parseInt(pieceToPush.dataset.cellIndex))
+                            .map(idx => cellElements[idx])
+                            .filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS));
+
+                        for (const destination of adjacentEmptyCells) {
+                            let tempMovesO = [...movesO];
+                            if (pieceToPush.classList.contains(O_CLASS)) {
+                                tempMovesO = tempMovesO.filter(p => p !== pieceToPush);
+                                if (tempMovesO.length >= MAX_MOVES) tempMovesO.shift();
+                                tempMovesO.push(destination);
+                                if (checkWin(O_CLASS, tempMovesO).hasWon) {
+                                    return { type: 'skill_shove', source: pieceToPush, destination: destination };
+                                }
+                            }
+                        }
+                    }
+                }
+                if (aiSkills.swap && allPieces.length >= 2) {
+                     for (let i = 0; i < allPieces.length; i++) {
+                         for (let j = i + 1; j < allPieces.length; j++) {
+                             const cell1 = allPieces[i];
+                             const cell2 = allPieces[j];
+                             let tempMovesO = [...movesO];
+                             let tempMovesX = [...movesX];
+                             if (cell1.classList.contains(O_CLASS) && cell2.classList.contains(X_CLASS)) {
+                                 tempMovesO = tempMovesO.filter(p => p !== cell1).concat(cell2);
+                                 tempMovesX = tempMovesX.filter(p => p !== cell2).concat(cell1);
+                             } else if (cell1.classList.contains(X_CLASS) && cell2.classList.contains(O_CLASS)) {
+                                 tempMovesX = tempMovesX.filter(p => p !== cell1).concat(cell2);
+                                 tempMovesO = tempMovesO.filter(p => p !== cell2).concat(cell1);
+                             }
+                             if (checkWin(O_CLASS, tempMovesO).hasWon) {
+                                 return { type: 'skill_swap', targets: [cell1, cell2] };
+                             }
+                         }
+                     }
+                }
+                const blockingMove = availableCells.find(cell => wouldWin(X_CLASS, cell, movesX));
+                if (blockingMove) {
+                    return { type: 'move', cell: blockingMove };
+                }
+                const playerHasWinningLine = checkWin(X_CLASS, movesX).hasWon;
+                if (playerHasWinningLine && aiSkills.swap && allPieces.length >= 2) {
+                    for (let i = 0; i < allPieces.length; i++) {
+                        for (let j = i + 1; j < allPieces.length; j++) {
+                            const cell1 = allPieces[i];
+                            const cell2 = allPieces[j];
+                            let tempMovesX = [...movesX];
+                            if (cell1.classList.contains(X_CLASS) && cell2.classList.contains(O_CLASS)) {
+                                tempMovesX = tempMovesX.filter(p => p !== cell1).concat(cell2);
+                            } else if (cell1.classList.contains(O_CLASS) && cell2.classList.contains(X_CLASS)) {
+                                tempMovesX = tempMovesX.filter(p => p !== cell2).concat(cell1);
+                            } else if (cell1.classList.contains(X_CLASS) && cell2.classList.contains(X_CLASS)) {
+                                const index1 = tempMovesX.indexOf(cell1);
+                                const index2 = tempMovesX.indexOf(cell2);
+                                if (index1 > -1 && index2 > -1) {
+                                    [tempMovesX[index1], tempMovesX[index2]] = [tempMovesX[index2], tempMovesX[index1]];
+                                }
+                            }
+                            if (!checkWin(X_CLASS, tempMovesX).hasWon) {
+                                return { type: 'skill_swap', targets: [cell1, cell2] };
+                            }
+                        }
+                    }
+                }
+                if (playerHasWinningLine && aiSkills.bomb) {
+                   const comboVencedor = checkWin(X_CLASS, movesX).combo;
+                   if(comboVencedor){
+                     const pecaCritica = cellElements[comboVencedor[0]];
+                     return { type: 'skill_bomb', target: pecaCritica };
+                   }
+                }
+                if (aiDifficulty === 'hard') {
+                    if (aiSkills.heal && healthO < 40) return { type: 'skill_heal' };
+                    if (aiSkills.shield && !aiSkills.shieldActive && healthO < 65) return { type: 'skill_shield' };
+                    if (aiSkills.mirror && !aiSkills.mirrorActive && opponentPieces.length >= 2) return { type: 'skill_mirror' };
+                    if (aiSkills.sacrifice && !aiSkills.damageBoostActive && aiPieces.length > 0) {
+                        const sacrificablePiece = aiPieces.find(p => !wouldWin(X_CLASS, p, movesX));
+                        if (sacrificablePiece) return { type: 'skill_sacrifice', target: sacrificablePiece };
+                    }
+                }
+                if (availableCells.length > 0) {
+                    let bestMoveCell = null;
+                    const center = cellElements[4];
+                    if (availableCells.includes(center)) { bestMoveCell = center; }
+                    else {
+                        const corners = [0, 2, 6, 8].map(i => cellElements[i]).filter(c => availableCells.includes(c));
+                        if (corners.length > 0) { bestMoveCell = corners[Math.floor(Math.random() * corners.length)];}
+                    }
+                    if (!bestMoveCell) { bestMoveCell = availableCells[Math.floor(Math.random() * availableCells.length)]; }
+                    return { type: 'move', cell: bestMoveCell };
+                }
+                logAction("A IA não tem ações e passa o turno.", 'player-o-log');
+                return { type: 'pass' };
+            }
+        
+            function aiMoveCaotico() {
+                let availableCells = cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && !c.classList.contains('black-hole'));
+                if(availableCells.length === 0) {
+                    swapTurns(); boardElement.classList.remove('locked'); return;
+                }
+                let bestMoveCell = null;
+                if (aiDifficulty !== 'easy') {
+                    let strategicCells = availableCells.filter(c => !eventManager.isMined(c)); 
+                    if (strategicCells.length === 0) strategicCells = availableCells; 
+                    for(const cell of strategicCells) {
+                        if(wouldWin(O_CLASS, cell, movesO)) {
+                            bestMoveCell = cell;
+                            if (eventManager.isCursed(cell)) break; 
+                        }
+                    }
+                    if(!bestMoveCell) { for(const cell of strategicCells) { if(wouldWin(X_CLASS, cell, movesX)) { bestMoveCell = cell; break; } } }
+                    if(!bestMoveCell) bestMoveCell = strategicCells[Math.floor(Math.random() * strategicCells.length)];
+                } else {
+                    if(!bestMoveCell) bestMoveCell = availableCells[Math.floor(Math.random() * availableCells.length)];
+                }
+                if(bestMoveCell) {
+                    handleCaoticClick({ target: bestMoveCell }); 
+                } else {
+                    swapTurns();
+                }
+                boardElement.classList.remove('locked');
+            }
+            
+            const ADJACENCY_MAP = {
+                0: [1, 3, 4], 1: [0, 2, 3, 4, 5], 2: [1, 4, 5],
+                3: [0, 1, 4, 6, 7], 4: [0, 1, 2, 3, 5, 6, 7, 8], 5: [1, 2, 4, 7, 8],
+                6: [3, 4, 7], 7: [3, 4, 5, 6, 8], 8: [4, 5, 7]
+            };
+        
+            function getAdjacentCells(index) {
+                return ADJACENCY_MAP[index] || [];
+            }
+            // --- SKILLS (TATIC MODE) ---
+            function activateBomb(player, skillId) {
+                const playerClass = player === 'x' ? 'x' : 'o';
+                const currentPlayer = isOTurn ? 'o' : 'x';
+                const opponentClass = playerClass === 'x' ? 'o' : 'x';
+        
+                if (player !== currentPlayer) return;
+                if (skills[opponentClass].mirrorActive) {
+                    return handleMirrorReflection(playerClass, skillId);
+                }
+                if (!isGameActive || !skills[playerClass].bomb || targetingState) return;
+                
+                const targetableCells = cellElements.filter(c => c.classList.contains(opponentClass));
+                if (targetableCells.length === 0) {
+                    showNotification("Não há peças inimigas para bombardear!");
+                    return;
+                }
+                
+                targetingState = { skill: 'bomb' };
+                boardElement.classList.add('targeting');
+                targetableCells.forEach(cell => cell.classList.add('targetable'));
+                updateSkillButtonsState();
+            }
+        
+            function handleBombExecution(cell) {
+                const playerWhoUsedBombClass = isOTurn ? 'o' : 'x';
+                const wasX = cell.classList.contains(X_CLASS);
+                const targetPlayerName = wasX ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                const userPlayerName = playerWhoUsedBombClass === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+
+                logAction(`${userPlayerName} usou Bomba 💣 na peça de ${targetPlayerName}.`, `player-${playerWhoUsedBombClass}-log`);
+                logAction(`A casa ${parseInt(cell.dataset.cellIndex) + 1} ficará interditada por 1 turno.`, 'system-log');
+                
+                playSound(bombSound);
+                interdictedCellIndex = parseInt(cell.dataset.cellIndex);
+                
+                const targetMoves = wasX ? movesX : movesO;
+                
+                const cellIndexInMoves = targetMoves.findIndex(el => parseInt(el.dataset.cellIndex) === interdictedCellIndex);
+                
+                if (cellIndexInMoves > -1) {
+                    targetMoves.splice(cellIndexInMoves, 1);
+                }
+                
+                cell.classList.remove(X_CLASS, O_CLASS);
+                cell.classList.add('interdicted');
+                
+                const particle = cell.querySelector('.particle-effect');
+                if (particle) particle.remove();
+                
+                resetTargetingMode();
+                updateOldestPieceIndicator();
+                
+                skills[playerWhoUsedBombClass].bomb = false;
+                
+                swapTurns();
+            }
+        
+            function activateHeal(player, skillId) {
+                const playerClass = player === 'x' ? 'x' : 'o';
+                const currentPlayer = isOTurn ? 'o' : 'x';
+                const opponentClass = playerClass === 'x' ? 'o' : 'x';
+                
+                if (player !== currentPlayer) return;
+                if (skills[opponentClass].mirrorActive) {
+                    return handleMirrorReflection(playerClass, skillId);
+                }
+                if(!isGameActive || !skills[playerClass].heal) return;
+                
+                const playerName = playerClass === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                logAction(`${playerName} usou Cura ❤️‍🩹 e recuperou ${HEAL_AMOUNT} de vida.`, `player-${playerClass}-log`);
+                clearInterdiction();
+        
+                playSound(healSound);
+                
+                if (player === O_CLASS) {
+                    healthO = Math.min(100, healthO + HEAL_AMOUNT);
+                } else {
+                    healthX = Math.min(100, healthX + HEAL_AMOUNT);
+                }
+                updateHealthBars();
+                
+                skills[playerClass].heal = false;
+                swapTurns();
+            }
+        
+            function activateShield(player, skillId) {
+                const playerClass = player === 'x' ? 'x' : 'o';
+                const currentPlayer = isOTurn ? 'o' : 'x';
+                const opponentClass = playerClass === 'x' ? 'o' : 'x';
+        
+                if (player !== currentPlayer) return;
+                if (skills[opponentClass].mirrorActive) {
+                    return handleMirrorReflection(playerClass, skillId);
+                }
+                if(!isGameActive || !skills[playerClass].shield) return;
+                
+                const playerName = playerClass === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                logAction(`${playerName} ativou o Escudo 🛡️.`, `player-${playerClass}-log`);
+                clearInterdiction();
+        
+                playSound(shieldSound);
+                skills[playerClass].shieldActive = true;
+                skills[playerClass].shield = false;
+                const charElement = player === O_CLASS ? charO : charX;
+                charElement.classList.add('shielded');
+                
+                swapTurns();
+            }
+            
+            function activateSacrifice(player, skillId) {
+                const playerClass = player === 'x' ? 'x' : 'o';
+                const currentPlayer = isOTurn ? 'o' : 'x';
+                const opponentClass = playerClass === 'x' ? 'o' : 'x';
+                
+                if (player !== currentPlayer) return;
+                if (skills[opponentClass].mirrorActive) {
+                    return handleMirrorReflection(playerClass, skillId);
+                }
+                if (!isGameActive || !skills[playerClass].sacrifice || targetingState) return;
+                
+                const playerPieces = cellElements.filter(c => c.classList.contains(playerClass));
+                if (playerPieces.length === 0) {
+                    showNotification("Você não tem peças para sacrificar!");
+                    return;
+                }
+                
+                console.log("Ativando modo de mira para Sacrifício.");
+                targetingState = { skill: 'sacrifice' };
+                boardElement.classList.add('targeting');
+                playerPieces.forEach(cell => cell.classList.add('targetable'));
+                updateSkillButtonsState();
+            }
+            
+            function handleSacrificeExecution(cell) {
+                const playerClass = cell.classList.contains(X_CLASS) ? 'x' : 'o';
+                const playerName = playerClass === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                logAction(`${playerName} usou Sacrifício 💀, destruindo uma peça para dobrar o dano do próximo ponto.`, `player-${playerClass}-log`);
+                
+                playSound(bombSound);
+                
+                const targetMoves = playerClass === 'x' ? movesX : movesO;
+                
+                const cellIndex = parseInt(cell.dataset.cellIndex);
+                const indexToRemove = targetMoves.findIndex(el => parseInt(el.dataset.cellIndex) === cellIndex);
+
+                if (indexToRemove > -1) {
+                    targetMoves.splice(indexToRemove, 1);
+                }
+
+                cell.classList.remove(X_CLASS, O_CLASS);
+                
+                const playerSkills = skills[playerClass];
+                playerSkills.sacrifice = false;
+                playerSkills.damageBoostActive = true;
+                
+                const charElement = playerClass === 'x' ? charX : charO;
+                charElement.classList.add('damage-boost');
+                
+                resetTargetingMode();
+                updateOldestPieceIndicator();
+                swapTurns();
+            }
+            
+            function activateMirror(player, skillId) {
+                const playerClass = player === 'x' ? 'x' : 'o';
+                const currentPlayer = isOTurn ? 'o' : 'x';
+                const opponentClass = playerClass === 'x' ? 'o' : 'x';
+        
+                if (player !== currentPlayer) return;
+                if (skills[opponentClass].mirrorActive) { // Cannot mirror a mirror
+                    return handleMirrorReflection(playerClass, skillId);
+                }
+                if (!isGameActive || !skills[playerClass].mirror) return;
+        
+                const playerName = playerClass === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                logAction(`${playerName} ativou o Espelho 🪞 para refletir a próxima habilidade inimiga.`, `player-${playerClass}-log`);
+                
+                clearInterdiction();
+                playSound(shieldSound); // Reusing sound
+        
+                skills[playerClass].mirrorActive = true;
+                skills[playerClass].mirror = false;
+                const charElement = player === 'x' ? charX : charO;
+                charElement.classList.add('mirror-active');
+                
+                swapTurns();
+            }
+            
+            function activateSwap(player, skillId) {
+                const playerClass = player === 'x' ? 'x' : 'o';
+                const currentPlayer = isOTurn ? 'o' : 'x';
+                const opponentClass = playerClass === 'x' ? 'o' : 'x';
+        
+                if (player !== currentPlayer) return;
+                if (skills[opponentClass].mirrorActive) {
+                    return handleMirrorReflection(playerClass, skillId);
+                }
+                if (!isGameActive || !skills[playerClass].swap || targetingState) return;
+                
+                const targetableCells = cellElements.filter(c => c.classList.contains(X_CLASS) || c.classList.contains(O_CLASS));
+                
+                if (targetableCells.length < 2) {
+                    showNotification("Não há peças suficientes no tabuleiro para realizar uma troca.");
+                    return;
+                }
+                
+                console.log("Ativando modo de mira para Troca.");
+                targetingState = { skill: 'swap', firstPick: null };
+                boardElement.classList.add('targeting');
+                targetableCells.forEach(cell => cell.classList.add('targetable'));
+                updateSkillButtonsState();
+            }
+        
+            function handleSwapExecution(cell1, cell2) {
+                const playerWhoUsedSwap = isOTurn ? 'o' : 'x';
+                const playerName = playerWhoUsedSwap === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                logAction(`${playerName} usou Troca 🔁 entre as casas ${parseInt(cell1.dataset.cellIndex) + 1} e ${parseInt(cell2.dataset.cellIndex) + 1}.`, `player-${playerWhoUsedSwap}-log`);
+
+                playSound(teleportSound); 
+        
+                const class1 = cell1.classList.contains(X_CLASS) ? X_CLASS : O_CLASS;
+                const class2 = cell2.classList.contains(X_CLASS) ? X_CLASS : O_CLASS;
+        
+                cell1.classList.remove(X_CLASS, O_CLASS);
+                cell2.classList.remove(X_CLASS, O_CLASS);
+        
+                cell1.classList.add(class2);
+                cell2.classList.add(class1);
+        
+                const arraysToCheck = [movesX, movesO];
+                arraysToCheck.forEach(movesArray => {
+                    const index1 = movesArray.indexOf(cell1);
+                    const index2 = movesArray.indexOf(cell2);
+        
+                    if (index1 > -1 && index2 > -1) {
+                        [movesArray[index1], movesArray[index2]] = [movesArray[index2], movesArray[index1]];
+                    } else if (index1 > -1) {
+                        movesArray[index1] = cell2;
+                    } else if (index2 > -1) {
+                        movesArray[index2] = cell1;
+                    }
+                });
+        
+                resetTargetingMode();
+                updateOldestPieceIndicator();
+        
+                skills[playerWhoUsedSwap].swap = false;
+                swapTurns();
+            }
+        
+            function activateShove(player, skillId) {
+                const playerClass = player === 'x' ? 'x' : 'o';
+                const currentPlayer = isOTurn ? 'o' : 'x';
+                const opponentClass = playerClass === 'x' ? 'o' : 'x';
+        
+                if (player !== currentPlayer) return;
+                if (skills[opponentClass].mirrorActive) {
+                    return handleMirrorReflection(playerClass, skillId);
+                }
+                if (!isGameActive || !skills[playerClass].shove || targetingState) return;
+        
+                const targetableCells = cellElements.filter(c => c.classList.contains(X_CLASS) || c.classList.contains(O_CLASS));
+                
+                if (targetableCells.length === 0) {
+                    showNotification("Não há peças no tabuleiro para empurrar.");
+                    return;
+                }
+        
+                console.log("Ativando modo de mira para Empurrão (passo 1: selecionar peça).");
+                targetingState = { skill: 'shove', pieceToPush: null };
+                boardElement.classList.add('targeting');
+                targetableCells.forEach(cell => cell.classList.add('targetable'));
+                updateSkillButtonsState();
+            }
+        
+            function handleShoveExecution(sourceCell, destinationCell) {
+                const playerWhoUsedShove = isOTurn ? 'o' : 'x';
+                const playerName = playerWhoUsedShove === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                logAction(`${playerName} usou Empurrão 🖐️, movendo a peça da casa ${parseInt(sourceCell.dataset.cellIndex) + 1} para ${parseInt(destinationCell.dataset.cellIndex) + 1}.`, `player-${playerWhoUsedShove}-log`);
+
+                playSound(teleportSound); // Reusing sound
+        
+                const pieceClass = sourceCell.classList.contains(X_CLASS) ? X_CLASS : O_CLASS;
+        
+                sourceCell.classList.remove(X_CLASS, O_CLASS);
+                destinationCell.classList.add(pieceClass);
+        
+                const movesArray = (pieceClass === X_CLASS) ? movesX : movesO;
+                const indexInMoves = movesArray.indexOf(sourceCell);
+                if (indexInMoves > -1) {
+                    movesArray[indexInMoves] = destinationCell;
+                }
+        
+                resetTargetingMode();
+                updateOldestPieceIndicator();
+        
+                skills[playerWhoUsedShove].shove = false;
+                swapTurns();
+            }
+        
+        
+            function handleMirrorReflection(player, skillId) {
+                const playerClass = player === 'x' ? 'x' : 'o';
+                const opponentClass = playerClass === 'x' ? 'o' : 'x';
+                
+                const skillName = ALL_SKILLS[skillId].name;
+                const playerName = playerClass === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                const opponentName = opponentClass === 'x' ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                
+                logAction(`Habilidade ${skillName} de ${playerName} foi refletida pelo Espelho 🪞 de ${opponentName}!`, 'system-log');
+                
+                console.log(`Habilidade ${skillId} de ${playerClass} foi refletida pelo Espelho de ${opponentClass}!`);
+                playSound(shieldSound);
+                
+                skills[opponentClass].mirrorActive = false;
+                const opponentChar = opponentClass === 'x' ? charX : charO;
+                opponentChar.classList.remove('mirror-active');
+                
+                skills[playerClass][skillId] = false;
+                swapTurns();
+            }
+        
+            function resetTargetingMode() {
+                targetingState = null;
+                boardElement.classList.remove('targeting');
+                cellElements.forEach(cell => {
+                    cell.classList.remove('targetable', 'swap-first-pick');
+                });
+                updateSkillButtonsState();
+            }
+        
+            function updateSkillButtonsState() {
+                if (!skills) return;
+                const isVsAi = gameMode.includes('single');
+                const canUseSkillX = !isOTurn && !targetingState;
+                const canUseSkillO = isOTurn && !targetingState;
+        
+                skillsXContainer.querySelectorAll('.skill-button').forEach(button => {
+                    if (button.id.includes('indicator')) return;
+                    const skillId = button.id.replace('-x', '');
+                    button.disabled = !skills.x[skillId] || !canUseSkillX;
+                });
+        
+                skillsOContainer.querySelectorAll('.skill-button').forEach(button => {
+                    const skillId = button.id.replace('-o', '');
+                    button.disabled = true; // AI buttons are always disabled for the player
+                });
+            }
+            
+            function updateOldestPieceIndicator() {
+                cellElements.forEach(cell => cell.classList.remove('oldest-piece'));
+                if (movesX.length === MAX_MOVES) {
+                    movesX[0].classList.add('oldest-piece');
+                }
+                if (movesO.length === MAX_MOVES) {
+                    movesO[0].classList.add('oldest-piece');
+                }
+            }
+            
+            function drawWinningLaserLine(winnerClass, combo) {
+                const firstCell = cellElements[combo[0]];
+                const lastCell = cellElements[combo[2]];
+                const gameScreenRect = gameScreen.getBoundingClientRect();
+                const firstCellRect = firstCell.getBoundingClientRect();
+                const lastCellRect = lastCell.getBoundingClientRect();
+                
+                const winnerColor = winnerClass === X_CLASS ?
+                    getComputedStyle(document.documentElement).getPropertyValue('--cor-x') :
+                    getComputedStyle(document.documentElement).getPropertyValue('--cor-o');
+                winningLaserLine.style.setProperty('--laser-color', winnerColor);
+                
+                const startLaserX_rel_screen = (firstCellRect.left + firstCellRect.width / 2) - gameScreenRect.left;
+                const startLaserY_rel_screen = (firstCellRect.top + firstCellRect.height / 2) - gameScreenRect.top;
+                const endLaserX_rel_screen = (lastCellRect.left + lastCellRect.width / 2) - gameScreenRect.left;
+                const endLaserY_rel_screen = (lastCellRect.top + lastCellRect.height / 2) - gameScreenRect.top;
+                
+                const distanceX = endLaserX_rel_screen - startLaserX_rel_screen;
+                const distanceY = endLaserY_rel_screen - startLaserY_rel_screen;
+                const lineWidth = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                
+                const angleRad = Math.atan2(distanceY, distanceX);
+                const angleDeg = angleRad * (180 / Math.PI);
+                
+                winningLaserLine.style.left = `${startLaserX_rel_screen}px`;
+                winningLaserLine.style.top = `${startLaserY_rel_screen}px`;
+                winningLaserLine.style.width = `${lineWidth}px`;
+                winningLaserLine.style.height = `10px`;
+                winningLaserLine.style.transform = `rotate(${angleDeg}deg)`;
+                winningLaserLine.style.transformOrigin = '0 50%';
+                
+                let animationName = '';
+                const normalizedAngle = (angleDeg + 360) % 360;
+                const angleTolerance = 5;
+                
+                if (Math.abs(normalizedAngle - 0) < angleTolerance || Math.abs(normalizedAngle - 180) < angleTolerance) {
+                    animationName = 'draw-laser-horizontal';
+                } else if (Math.abs(normalizedAngle - 90) < angleTolerance || Math.abs(normalizedAngle - 270) < angleTolerance) {
+                    animationName = 'draw-laser-vertical';
+                    winningLaserLine.style.width = `10px`;
+                    winningLaserLine.style.height = `${lineWidth}px`;
+                    winningLaserLine.style.transformOrigin = '50% 0%';
+                } else if (Math.abs(normalizedAngle - 45) < angleTolerance || Math.abs(normalizedAngle - 225) < angleTolerance) {
+                    animationName = 'draw-laser-diagonal-1';
+                    winningLaserLine.style.width = `${lineWidth + (firstCellRect.width * 0.3)}px`;
+                } else if (Math.abs(normalizedAngle - 135) < angleTolerance || Math.abs(normalizedAngle - 315) < angleTolerance) {
+                    animationName = 'draw-laser-diagonal-2';
+                    winningLaserLine.style.width = `${lineWidth + (firstCellRect.width * 0.3)}px`;
+                } else {
+                    console.warn("Ângulo de combinação vencedora inesperado:", angleDeg);
+                    animationName = 'draw-laser-horizontal';
+                }
+        
+                winningLaserLine.classList.remove('winning-laser-active');
+                winningLaserLine.style.animation = 'none';
+                winningLaserLine.style.opacity = '1';
+                void winningLaserLine.offsetWidth;
+                winningLaserLine.classList.add('winning-laser-active');
+                winningLaserLine.style.animation = `${animationName} 0.5s ease-out forwards`;
+            }
+        
+            class ArenaEventManager {
+                constructor() {
+                    this.hasActiveEvent = false;
+                    this.cursedCell = { index: -1, turnsLeft: 0 };
+                    this.minedCell = { index: -1, turnsLeft: 0 };
+                    this.portals = { cells: [], turnsLeft: 0 };
+                    this.blackHole = { index: -1, turnsLeft: 0 };
+                    this.powerInversionActive = false;
+                    this.meteorShowerActive = false;
+                    this.foggyCells = [];
+                }
+
+                stop() {
+                    this.clearAllEvents(true);
+                }
+
+                clearAllEvents(clearMeteorShower = false) {
+                    if (this.cursedCell.index > -1 && cellElements[this.cursedCell.index]) cellElements[this.cursedCell.index].classList.remove('cursed');
+                    if (this.minedCell.index > -1 && cellElements[this.minedCell.index]) cellElements[this.minedCell.index].classList.remove('mined');
+                    this.portals.cells.forEach(c => c.classList.remove('portal'));
+                    if (this.blackHole.index > -1 && cellElements[this.blackHole.index]) cellElements[this.blackHole.index].classList.remove('black-hole');
+                    this.foggyCells.forEach(c => c.classList.remove('foggy'));
+                    healthContainerX.classList.remove('power-inversion-glow');
+                    healthContainerO.classList.remove('power-inversion-glow');
+                    
+                    this.cursedCell = { index: -1, turnsLeft: 0 };
+                    this.minedCell = { index: -1, turnsLeft: 0 };
+                    this.portals = { cells: [], turnsLeft: 0 };
+                    this.hasActiveEvent = false;
+                    this.blackHole = { index: -1, turnsLeft: 0 };
+                    this.powerInversionActive = false; 
+                    this.foggyCells = [];
+                    delete this.powerInversionTurn;
+
+                    if(clearMeteorShower) {
+                        this.meteorShowerActive = false;
+                    }
+                }
+
+                consumeAndRefresh() {
+                    this.clearAllEvents(true); 
+                    setTimeout(() => this.triggerRandomEvent(), 500);
+                }
+
+                triggerRandomEvent() {
+                    if (!isGameActive) return;
+                    this.clearAllEvents(true);
+
+                    const availableCells = cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS));
+                    if (availableCells.length < 1) return;
+                    
+                    this.hasActiveEvent = true;
+                    const eventType = Math.floor(Math.random() * 7);
+                    
+                    switch (eventType) {
+                        case 0: this._triggerCursedCell(availableCells); break;
+                        case 1: this._triggerMinedCell(availableCells); break;
+                        case 2: this._triggerPortals(availableCells); break;
+                        case 3: this._triggerBlackHole(availableCells); break;
+                        case 4: this._triggerPowerInversion(); break;
+                        case 5: this._triggerMeteorShower(); break;
+                        case 6: this._triggerFogOfWar(); break;
+                    }
+                }
+                
+                _triggerCursedCell(availableCells) {
+                    const cellToCurse = availableCells[Math.floor(Math.random() * availableCells.length)];
+                    this.cursedCell = { index: cellElements.indexOf(cellToCurse), turnsLeft: 3 };
+                    cellToCurse.classList.add('cursed');
+                    logAction(`Evento: Célula Amaldiçoada! Ela desaparecerá em 3 turnos.`, 'system-log');
+                }
+                
+                _triggerMinedCell(availableCells) {
+                     const cellToMine = availableCells[Math.floor(Math.random() * availableCells.length)];
+                     this.minedCell = { index: cellElements.indexOf(cellToMine), turnsLeft: 3 };
+                     cellToMine.classList.add('mined');
+                     logAction(`Evento: Célula Minada 💥! Ela explodirá em 3 turnos se não for ativada.`, 'system-log');
+                }
+
+                _triggerPortals(availableCells) {
+                    if (availableCells.length < 2) return this.triggerRandomEvent();
+                    let idx1 = Math.floor(Math.random() * availableCells.length);
+                    let idx2;
+                    do { idx2 = Math.floor(Math.random() * availableCells.length); } while (idx1 === idx2);
+                    this.portals = { cells: [availableCells[idx1], availableCells[idx2]], turnsLeft: 3 };
+                    this.portals.cells.forEach(c => c.classList.add('portal'));
+                    logAction(`Evento: Portais 🌀 apareceram! Eles se fecharão em 3 turnos.`, 'system-log');
+                }
+
+                _triggerBlackHole(availableCells) {
+                    const cellToConsume = availableCells[Math.floor(Math.random() * availableCells.length)];
+                    this.blackHole = { index: cellElements.indexOf(cellToConsume), turnsLeft: 2 };
+                    cellToConsume.classList.add('black-hole');
+                    logAction(`Evento: Um Buraco Negro ⚫ surgiu e desativará uma célula por 2 turnos!`, 'system-log');
+                }
+                
+                _triggerPowerInversion() {
+                    this.powerInversionActive = true;
+                    if(healthX < healthO) healthContainerX.classList.add('power-inversion-glow');
+                    else if (healthO < healthX) healthContainerO.classList.add('power-inversion-glow');
+                    logAction(`Evento: Inversão de Poder ⚡! O jogador com menos vida causará dano extra!`, 'system-log');
+                }
+                
+                _triggerMeteorShower() {
+                    this.meteorShowerActive = true;
+                    logAction(`Evento: Chuva de Meteoros ☄️! Cuidado, peças podem ser destruídas a qualquer momento!`, 'system-log');
+                }
+
+                _triggerFogOfWar() {
+                    const occupiedCells = cellElements.filter(c => c.classList.contains(X_CLASS) || c.classList.contains(O_CLASS));
+                    if (occupiedCells.length < 1) return this.triggerRandomEvent();
+                    this.foggyCells = occupiedCells.sort(() => 0.5 - Math.random()).slice(0, 3);
+                    this.foggyCells.forEach(c => c.classList.add('foggy'));
+                    logAction(`Evento: Névoa de Batalha 🌫️! A identidade de algumas peças foi ocultada!`, 'system-log');
+                }
+
+                isCursed(cell) { return cellElements.indexOf(cell) === this.cursedCell.index; }
+                isMined(cell) { return cellElements.indexOf(cell) === this.minedCell.index; }
+                getOtherPortal(cell) { return this.portals.cells.find(p => p !== cell); }
+
+                triggerMine(playerClass) {
+                    playSound(bombSound);
+                    const damage = 15;
+                    const playerName = playerClass === X_CLASS ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
+                    logAction(`${playerName} ativou uma mina 💥 e sofreu ${damage} de dano!`, `player-${playerClass}-log`);
+                    if (playerClass === X_CLASS) healthX = Math.max(0, healthX - damage);
+                    else healthO = Math.max(0, healthO - damage);
+                    updateHealthBars();
+                    this.consumeAndRefresh();
+                    if (healthX <= 0 || healthO <= 0) endGame();
+                }
+            }
+        
+            function openCharacterModal(player) {
+                console.log("Abrindo modal de personagem para:", player);
+                playerToEdit = player;
+                modal.classList.add('show');
+            }
+        
+            function applyAvatar(element, avatar) {
+                if (!element) return;
+                element.innerHTML = '';
+                element.style.backgroundImage = '';
+                element.style.backgroundColor = 'transparent';
+                element.style.borderStyle = 'solid';
+                if (avatar.type === 'emoji') {
+                    element.innerText = avatar.value;
+                } else if (avatar.type === 'image') {
+                    element.style.backgroundImage = `url('${avatar.value}')`;
+                }
+            }
+        
+            PRESET_EMOJIS.forEach(emoji => {
+                const charDiv = document.createElement('div');
+                charDiv.classList.add('preset-char');
+                charDiv.innerText = emoji;
+                charDiv.addEventListener('click', () => {
+                    const avatar = { type: 'emoji', value: emoji };
+                    if (playerToEdit === 'x_arsenal') {
+                        playerXAvatar = avatar;
+                        applyAvatar(arsenalCharPreview, avatar);
+                    } else if (playerToEdit === 'o') {
+                        playerOAvatar = avatar;
+                        applyAvatar(charPreviewO, avatar);
+                    }
+                    modal.classList.remove('show');
+                });
+                presetCharsContainer.appendChild(charDiv);
+            });
+        
+            modalUploadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const avatar = { type: 'image', value: e.target.result };
+                        if (playerToEdit === 'x_arsenal') {
+                            playerXAvatar = avatar;
+                            applyAvatar(arsenalCharPreview, avatar);
+                        } else if (playerToEdit === 'o') {
+                            playerOAvatar = avatar;
+                            applyAvatar(charPreviewO, avatar);
+                        }
+                        modal.classList.remove('show');
+                    };
+                    reader.readAsDataURL(file);
+                }
+                event.target.value = '';
+            });
+            
+            // --- GLOBAL EVENT LISTENERS ---
+            notificationCloseButton.addEventListener('click', () => notificationModal.classList.remove('show'));
+            saveArsenalButton.addEventListener('click', saveArsenalAndProceed);
+            arsenalPlayerNameInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') saveArsenalAndProceed(); });
+            arsenalCharPreview.addEventListener('click', () => openCharacterModal('x_arsenal'));
+            changeArsenalButton.addEventListener('click', () => { showScreen(arsenalScreen, 'back'); });
+            charPreviewO.addEventListener('click', () => openCharacterModal('o'));
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+            singlePlayerButton.addEventListener('click', () => { gameMode = 'single'; showScreen(difficultySelectMenu, 'forward'); });
+            localMultiplayerButton.addEventListener('click', () => { gameMode = 'local'; showScreen(playerSetupMenu, 'forward'); });
+            taticoModeButton.addEventListener('click', () => { showScreen(taticoSubmenu, 'forward'); });
+            taticoSubmenuButtons.forEach(button => { button.addEventListener('click', () => { selectedSubMode = button.dataset.submode; opponentSelectTitle.innerText = `Modo ${selectedSubMode === 'tatico' ? 'Batalha Tática' : 'Arena Caótica'}`; showScreen(opponentSelectMenu, 'forward'); }); });
+            opponentHumanButton.addEventListener('click', () => { gameMode = selectedSubMode; showScreen(playerSetupMenu, 'forward'); });
+            opponentAiButton.addEventListener('click', () => { gameMode = selectedSubMode + '_single'; showScreen(difficultySelectMenu, 'forward'); });
+            difficultyButtons.forEach(button => { button.addEventListener('click', () => { aiDifficulty = button.dataset.difficulty; initializeMatch(); showScreen(gameScreen, 'forward'); }); });
+            backToModeSelectBtn.addEventListener('click', () => showScreen(modeSelectMenu, 'back'));
+            backToModeSelectBtn2.addEventListener('click', () => { const targetScreen = (gameMode.includes('single') && !gameMode.includes('_')) ? modeSelectMenu : opponentSelectMenu; showScreen(targetScreen, 'back'); });
+            backToModeSelectBtn3.addEventListener('click', () => showScreen(modeSelectMenu, 'back'));
+            backToTaticoMenuBtn.addEventListener('click', () => showScreen(taticoSubmenu, 'back'));
+            startGameButton.addEventListener('click', () => { initializeMatch(); showScreen(gameScreen, 'forward'); });
+            restartButton.addEventListener('click', () => { showScreen(modeSelectMenu, 'back'); });
+
+            historyToggleButton.addEventListener('click', () => {
+                historyPanel.classList.toggle('show');
+            });
+            
+            // --- GAME INITIALIZATION ---
+            document.addEventListener('DOMContentLoaded', () => {
+                loadArsenalData();
+            });
+        </script>
+    </body>
+</html>
