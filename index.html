@@ -1105,39 +1105,6 @@
             pointer-events: none;
         }
 
-        #winning-laser-line {
-            position: absolute;
-            background-color: var(--laser-color, var(--interdicao-cor));
-            box-shadow: 0 0 10px 5px var(--laser-color, var(--interdicao-cor)), 0 0 20px 10px rgba(255, 0, 0, 0.5);
-            border-radius: 5px;
-            z-index: 10;
-            opacity: 0;
-            transition: opacity 0.3s ease-out;
-            transform-origin: center center;
-        }
-
-        @keyframes draw-laser-horizontal {
-            0% { transform: scaleX(0); opacity: 0; }
-            100% { transform: scaleX(1); opacity: 1; }
-        }
-        @keyframes draw-laser-vertical {
-            0% { transform: scaleY(0); opacity: 0; }
-            100% { transform: scaleY(1); opacity: 1; }
-        }
-        @keyframes draw-laser-diagonal-1 {
-            0% { transform: scale(0) rotate(45deg); opacity: 0; }
-            100% { transform: scale(1) rotate(45deg); opacity: 1; }
-        }
-        @keyframes draw-laser-diagonal-2 {
-            0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-            100% { transform: scale(1) rotate(-45deg); opacity: 1; }
-        }
-
-        .winning-laser-active {
-            opacity: 1 !important;
-            animation-fill-mode: forwards;
-        }
-
         .cell.winning-cell-pulse {
             animation: winning-cell-pulse 1s infinite alternate;
         }
@@ -1211,7 +1178,7 @@
             }
 
             #game-screen {
-                 justify-content: space-around;
+                justify-content: space-around;
             }
 
             .board {
@@ -1219,6 +1186,59 @@
                 padding: 10px;
             }
         }
+
+        /* =================================================== */
+        /* === AJUSTE DEFINITIVO PARA A LINHA LASER VENCEDORA === */
+        /* =================================================== */
+        #winning-laser-line {
+            /* Estilos base que já existiam */
+            position: absolute;
+            background-color: var(--laser-color, var(--interdicao-cor));
+            box-shadow: 0 0 10px 5px var(--laser-color, var(--interdicao-cor)), 0 0 20px 10px rgba(255, 0, 0, 0.5);
+            border-radius: 5px;
+            z-index: 10;
+            
+            /* Novos estilos para o posicionamento e animação */
+            transform-origin: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            
+            /* Remove estilos antigos que serão controlados pelas classes */
+            width: 0; 
+            height: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Começa invisível no centro */
+        }
+        
+        /* Animação de "desenho" da linha */
+        @keyframes draw-line {
+            to { width: 105%; } /* 105% para cobrir as células de ponta a ponta */
+        }
+        @keyframes draw-line-diag {
+            to { width: 145%; } /* A diagonal é mais longa (sqrt(2)) */
+        }
+        
+        /* Mostra a linha e inicia a animação */
+        #winning-laser-line.show {
+            opacity: 1;
+            height: 10px; /* Define a espessura da linha */
+        }
+        
+        /* === 8 Posições de Vitória Pré-definidas === */
+        /* Linhas Horizontais */
+        .line-row-0 { top: 16.66%; animation: draw-line 0.5s forwards; }
+        .line-row-1 { top: 50%;    animation: draw-line 0.5s forwards; }
+        .line-row-2 { top: 83.33%; animation: draw-line 0.5s forwards; }
+        
+        /* Linhas Verticais */
+        .line-col-0 { left: 16.66%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+        .line-col-1 { left: 50%;    transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+        .line-col-2 { left: 83.33%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+        
+        /* Linhas Diagonais */
+        .line-diag-0 { transform: translate(-50%, -50%) rotate(45deg);  animation: draw-line-diag 0.5s forwards; }
+        .line-diag-1 { transform: translate(-50%, -50%) rotate(-45deg); animation: draw-line-diag 0.5s forwards; }
 
     </style>
 </head>
@@ -1583,7 +1603,7 @@
                 }
                 // Nível 80: Chefe Final do Espelho
                 else if (level === 80) {
-                    return { level, aiName: "O Campeão Supremo", aiDifficulty: 'hard', aiSkills: ['mirror', 'shield', 'swap', 'shove', 'sacrifice'], unlocksSkill: 'mirror', mission: { description: "Derrote a lenda para desbloquear o Espelho � e completar sua jornada.", isCompleted: (gd) => gd.playerWon } };
+                    return { level, aiName: "O Campeão Supremo", aiDifficulty: 'hard', aiSkills: ['mirror', 'shield', 'swap', 'shove', 'sacrifice'], unlocksSkill: 'mirror', mission: { description: "Derrote a lenda para desbloquear o Espelho  e completar sua jornada.", isCompleted: (gd) => gd.playerWon } };
                 }
                 
                 return null; // Caso algum nível não seja coberto
@@ -1907,8 +1927,8 @@
                     if (currentLevelData.level === 35 && !campaignProgress.unlockedThirdSlot) {
                         campaignProgress.unlockedThirdSlot = true;
                         const notificationMessage = `<h3>Arsenal Expandido!</h3>
-                                                     <p>Você provou seu valor tático. Como recompensa, o 3º slot de habilidade foi desbloqueado para os modos **Batalha Tática** e **Partida Rápida**!</p>
-                                                     <p><i>(Na Campanha, o desafio continua com 2 slots).</i></p>`;
+                                                 <p>Você provou seu valor tático. Como recompensa, o 3º slot de habilidade foi desbloqueado para os modos **Batalha Tática** e **Partida Rápida**!</p>
+                                                 <p><i>(Na Campanha, o desafio continua com 2 slots).</i></p>`;
                         showNotification(notificationMessage.replace(/\n\s+/g, '\n'));
                     }
 
@@ -1987,7 +2007,7 @@
                 updateHealthBars();
                 updateOldestPieceIndicator();
                 
-                winningLaserLine.classList.remove('winning-laser-active');
+                winningLaserLine.className = ''; // Reset laser line classes
                 boardElement.classList.remove('dimmed-board');
                 cellElements.forEach(cell => {
                     cell.classList.remove('winning-cell-pulse');
@@ -2062,55 +2082,6 @@
                     // This part can be expanded later
                 }
                 updateTurnIndicator();
-            }
-            
-            function setupSkillButtons() {
-                skillsXContainer.innerHTML = '';
-                skillsOContainer.innerHTML = '';
-                
-                const createButton = (skill, playerClass) => {
-                    const button = document.createElement('button');
-                    button.className = 'skill-button';
-                    button.innerHTML = skill.icon;
-                    
-                    if (skill.type === 'active') {
-                        button.id = `${skill.id}-${playerClass}`;
-                        button.title = `${skill.name}: ${skill.description}`;
-                        if (skill.implemented && playerClass === X_CLASS) { // Only player X can click
-                            button.addEventListener('click', () => {
-                                const skillActions = {
-                                    'bomb': () => activateBomb(X_CLASS, 'bomb'), 'heal': () => activateHeal(X_CLASS, 'heal'),
-                                    'shield': () => activateShield(X_CLASS, 'shield'), 'sacrifice': () => activateSacrifice(X_CLASS, 'sacrifice'),
-                                    'mirror': () => activateMirror(X_CLASS, 'mirror'), 'swap': () => activateSwap(X_CLASS, 'swap'),
-                                    'shove': () => activateShove(X_CLASS, 'shove'),
-                                };
-                                skillActions[skill.id]?.();
-                            });
-                        } else {
-                            button.disabled = true;
-                        }
-                    } else { // Passive skills
-                        button.id = `${skill.id}-indicator-${playerClass}`;
-                        button.title = `${skill.name} (Passiva): ${skill.description}`;
-                        button.disabled = true;
-                        button.style.cursor = 'help';
-                    }
-                    return button;
-                }
-
-                Object.keys(skills.x).forEach(skillId => {
-                     if (skills.x[skillId] === true && ALL_SKILLS[skillId]) {
-                         skillsXContainer.appendChild(createButton(ALL_SKILLS[skillId], X_CLASS));
-                     }
-                });
-                
-                Object.keys(skills.o).forEach(skillId => {
-                    if (skills.o[skillId] === true && ALL_SKILLS[skillId]) { 
-                        skillsOContainer.appendChild(createButton(ALL_SKILLS[skillId], O_CLASS));
-                    }
-                });
-                
-                updateSkillButtonsState();
             }
             
             function drainHealth() {
@@ -2235,7 +2206,7 @@
                     drawWinningLaserLine(winnerClass, winningCombo);
                     setTimeout(() => {
                         boardElement.classList.remove('dimmed-board', 'locked');
-                        winningLaserLine.classList.remove('winning-laser-active');
+                        winningLaserLine.className = ''; // Reset laser line
                         winningCombo.forEach(index => {
                              cellElements[index].classList.remove('winning-cell-pulse');
                              cellElements[index].style.removeProperty('--pulse-color');
@@ -2609,12 +2580,12 @@
                  let currentHealth = isPlayerX ? healthX : healthO;
                  let maxHealth = 100;
                  if (gameMode === 'campaign' && currentLevelData && currentLevelData.customInitialHealth) {
-                     maxHealth = isPlayerX ? (currentLevelData.customInitialHealth.x || 100) : (currentLevelData.customInitialHealth.o || 100);
+                      maxHealth = isPlayerX ? (currentLevelData.customInitialHealth.x || 100) : (currentLevelData.customInitialHealth.o || 100);
                  }
 
                  if (currentHealth >= maxHealth) {
-                      if(isPlayerX) showNotification("Sua vida já está cheia!");
-                      return;
+                       if(isPlayerX) showNotification("Sua vida já está cheia!");
+                       return;
                  }
                  
                  const healthToSet = Math.min(maxHealth, currentHealth + HEAL_AMOUNT);
@@ -2629,11 +2600,11 @@
                  updateSkillButtonsState();
 
                  if(!isPlayerX){
-                      setTimeout(() => swapTurns(), 500);
+                       setTimeout(() => swapTurns(), 500);
                  } else {
-                      swapTurns();
+                       swapTurns();
                  }
-             }
+            }
 
              function activateBomb(player, skillId){ 
                  if (handleMirrorReflection(player, skillId)) return;
@@ -2656,11 +2627,11 @@
                  updateSkillButtonsState();
 
                  if(player === O_CLASS){
-                       setTimeout(() => swapTurns(), 500);
+                     setTimeout(() => swapTurns(), 500);
                  } else {
-                      swapTurns();
+                     swapTurns();
                  }
-             }
+            }
 
             function activateSacrifice(player, skillId) {
                 if (!isGameActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId) || targetingState) return;
@@ -2763,13 +2734,13 @@
                     handleDamage(O_CLASS, DAMAGE_PER_POINT, winO.combo);
                 } else {
                      if (player === X_CLASS) {
-                          swapTurns();
+                           swapTurns();
                      } else {
-                          setTimeout(() => swapTurns(), 500);
+                           setTimeout(() => swapTurns(), 500);
                      }
                 }
             }
-             
+            
             function activateShove(player, skillId){ 
                 if (!isGameActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId) || targetingState) return;
                 if (handleMirrorReflection(player, skillId)) return;
@@ -2845,7 +2816,7 @@
                  } else {
                     swapTurns();
                  }
-             }
+            }
              
              function handleMirrorReflection(player, skillId) {
                  const opponent = player === X_CLASS ? 'o' : 'x';
@@ -2867,7 +2838,7 @@
                       return true;
                  }
                  return false;
-             }
+            }
 
              function resetTargetingMode() {
                  if (targetingState) {
@@ -2878,45 +2849,40 @@
                  boardElement.className = 'board'; // Reset all targeting classes
                  cellElements.forEach(c => c.classList.remove('targetable'));
                  updateSkillButtonsState();
-             }
+            }
 
-             function drawWinningLaserLine(winnerClass, combo) { 
-                 /* Full original logic here, no changes needed */ 
-                 const startCell = cellElements[combo[0]];
-                 const endCell = cellElements[combo[2]];
-                 const boardRect = boardElement.getBoundingClientRect();
-                 const startRect = startCell.getBoundingClientRect();
-                 const endRect = endCell.getBoundingClientRect();
+            // ===================================
+            // INÍCIO DA SUBSTITUIÇÃO DO JAVASCRIPT
+            // ===================================
+            function drawWinningLaserLine(winnerClass, combo) {
+                // 1. Mapeia a combinação vencedora para a classe CSS correta
+                const comboStr = combo.join('');
+                const lineClasses = {
+                    '012': 'line-row-0', '345': 'line-row-1', '678': 'line-row-2',
+                    '036': 'line-col-0', '147': 'line-col-1', '258': 'line-col-2',
+                    '048': 'line-diag-0', '246': 'line-diag-1'
+                };
+                const lineClass = lineClasses[comboStr];
 
-                 const startX = startRect.left + startRect.width / 2 - boardRect.left;
-                 const startY = startRect.top + startRect.height / 2 - boardRect.top;
-                 const endX = endRect.left + endRect.width / 2 - boardRect.left;
-                 const endY = endRect.top + endRect.height / 2 - boardRect.top;
+                if (lineClass) {
+                    // 2. Define a cor do laser
+                    winningLaserLine.style.setProperty('--laser-color', winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)');
 
-                 const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
-                 const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                    // 3. Limpa classes antigas e adiciona a classe correta para a posição e a animação
+                    winningLaserLine.className = ''; // Limpa tudo
+                    winningLaserLine.classList.add('show', lineClass);
 
-                 winningLaserLine.style.setProperty('--laser-color', winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)');
-                 winningLaserLine.style.width = `${length}px`;
-                 winningLaserLine.style.height = '10px';
-                 winningLaserLine.style.top = `${startY - 5}px`;
-                 winningLaserLine.style.left = `${startX}px`;
-                 winningLaserLine.style.transformOrigin = '0 50%';
-                 winningLaserLine.style.transform = `rotate(${angle}deg)`;
-
-                 // Animate winning cells
-                 const pulseColor = winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)';
-                 combo.forEach(index => {
-                     cellElements[index].style.setProperty('--pulse-color', pulseColor);
-                     cellElements[index].classList.add('winning-cell-pulse');
-                 });
-
-                 // Animate laser
-                 winningLaserLine.style.animation = 'none';
-                 void winningLaserLine.offsetWidth; // Trigger reflow
-                 winningLaserLine.style.animation = `draw-laser-horizontal 1s ease-out forwards`; // a generic animation for length
-                 winningLaserLine.classList.add('winning-laser-active');
-             }
+                    // 4. Anima as células da vitória
+                    const pulseColor = winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)';
+                    combo.forEach(index => {
+                        cellElements[index].style.setProperty('--pulse-color', pulseColor);
+                        cellElements[index].classList.add('winning-cell-pulse');
+                    });
+                }
+            }
+            // ===================================
+            // FIM DA SUBSTITUIÇÃO DO JAVASCRIPT
+            // ===================================
 
             function updateSkillButtonsState(){
                 if (!skills) return;
