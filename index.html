@@ -597,7 +597,7 @@
         }
 
         .cell.mined::after {
-            content: '�'; 
+            content: '💥'; 
             position: absolute;
             font-size: 1.2rem;
             bottom: 5px;
@@ -944,6 +944,46 @@
         }
 
         /* ===== FIM DO AJUSTE ===== */
+
+        /* --- ESTILOS DO TEXTO FLUTUANTE DE DANO/CURA --- */
+        .floating-text {
+            position: absolute;
+            top: 25%;
+            font-family: var(--font-titulo);
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            pointer-events: none;
+            animation: float-and-fade 1.5s ease-out forwards;
+        }
+
+        .floating-text.damage {
+            color: var(--dano-cor);
+        }
+        .floating-text.heal {
+            color: var(--vida-cor);
+        }
+
+        .floating-text.player-x {
+            left: 25%;
+            transform: translateX(-50%);
+        }
+        .floating-text.player-o {
+            right: 25%;
+            transform: translateX(50%);
+        }
+
+        @keyframes float-and-fade {
+            0% {
+                transform: translate(var(--translateX, -50%), 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--translateX, -50%), -60px);
+                opacity: 0;
+            }
+        }
+
 
         @keyframes shine-sweep {
             100% { left: 150%; }
@@ -1685,6 +1725,7 @@
             const modalSpecialConditions = document.getElementById('modal-special-conditions');
             const modalSpecialConditionsText = document.getElementById('modal-special-conditions-text');
             const closeLevelModalButton = document.getElementById('close-level-modal');
+            const battleArena = document.querySelector('.battle-arena');
             
             // ELEMENTOS DE PAUSE ADICIONADOS
             const pauseButton = document.getElementById('pause-button');
@@ -1875,7 +1916,7 @@
                     if (occupiedCells.length < 1) return this.triggerRandomEvent();
                     this.foggyCells = occupiedCells.sort(() => 0.5 - Math.random()).slice(0, 3);
                     this.foggyCells.forEach(c => c.classList.add('foggy'));
-                    logAction(`Evento: Névoa de Batalha 🌫️! A identidade de algumas peças foi ocultada!`, 'system-log');
+                    logAction(`Evento: Névoa de Batalha �️! A identidade de algumas peças foi ocultada!`, 'system-log');
                 }
 
                 isCursed(cell) { return this.cursedCell.index !== -1 && cellElements.indexOf(cell) === this.cursedCell.index; }
@@ -1883,8 +1924,10 @@
                 getOtherPortal(cell) { return this.portals.cells.find(p => p !== cell); }
 
                 triggerMine(playerClass) {
-                    playSound(bombSound);
                     const damage = 15;
+                    const playerChar = playerClass === X_CLASS ? 'x' : 'o';
+                    showFloatingText(playerChar, `-${damage}`, 'damage');
+                    playSound(bombSound);
                     const playerName = playerClass === X_CLASS ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText;
                     logAction(`${playerName} ativou uma mina 💥 e sofreu ${damage} de dano!`, `player-${playerClass}-log`);
                     if (playerClass === X_CLASS) healthX = Math.max(0, healthX - damage);
@@ -1983,6 +2026,25 @@
             function getMaxKitSize() {
                 if (gameMode === 'campaign') { return 2; } 
                 return campaignProgress.unlockedThirdSlot ? 3 : 2;
+            }
+
+            // NOVA FUNÇÃO PARA TEXTO FLUTUANTE
+            function showFloatingText(player, text, type) {
+                if (!battleArena) return;
+
+                const textElement = document.createElement('div');
+                textElement.classList.add('floating-text', `player-${player}`, type);
+                textElement.textContent = text;
+
+                if (player === 'o') {
+                    textElement.style.setProperty('--translateX', '50%');
+                }
+
+                battleArena.appendChild(textElement);
+
+                setTimeout(() => {
+                    textElement.remove();
+                }, 1500);
             }
 
             // --- ARSENAL AND PROFILE LOGIC ---
@@ -2242,7 +2304,6 @@
                 swappedOwnWithEnemy = false;
                 playerUsedCenter = false;
                 wonOnDiagonal = false;
-                // ALTERADO: Garante que `skills` seja sempre um objeto válido
                 skills = { x: {}, o: {} };
 
                 historyLogContent.innerHTML = '';
@@ -2267,7 +2328,6 @@
                 }
                 cellElements = Array.from(boardElement.querySelectorAll('.cell'));
                 
-                // ALTERADO: Adiciona os novos handlers para o modo caótico
                 const clickHandler = {
                     'local': handleLocalClick, 
                     'single': handleVsAiClick,
@@ -2346,7 +2406,6 @@
                     setupSkillButtons();
                 }
                 
-                // ALTERADO: Inicia o gerenciador de eventos para o modo caótico
                 if (gameMode.startsWith('caotico')) {
                     eventManager = new ArenaEventManager();
                     eventManager.triggerRandomEvent();
@@ -2368,7 +2427,7 @@
                         button.title = `${skill.name}: ${skill.description}`;
                         if (skill.implemented && playerClass === X_CLASS) {
                             button.addEventListener('click', () => {
-                                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                                if (isPaused) return;
                                 const skillActions = { 'bomb': () => activateBomb(X_CLASS, 'bomb'), 'heal': () => activateHeal(X_CLASS, 'heal'), 'shield': () => activateShield(X_CLASS, 'shield'), 'sacrifice': () => activateSacrifice(X_CLASS, 'sacrifice'), 'mirror': () => activateMirror(X_CLASS, 'mirror'), 'swap': () => activateSwap(X_CLASS, 'swap'), 'shove': () => activateShove(X_CLASS, 'shove'), };
                                 skillActions[skill.id]?.();
                             });
@@ -2384,7 +2443,7 @@
             }
             
             function drainHealth() {
-                if (!isGameActive || isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (!isGameActive || isPaused) return;
                 if (isOTurn) { if (healthO > 0) healthO = Math.max(0, healthO - HEALTH_DRAIN_PER_SECOND); }
                 else { if (healthX > 0) healthX = Math.max(0, healthX - HEALTH_DRAIN_PER_SECOND); }
                 updateHealthBars();
@@ -2409,6 +2468,10 @@
             }
             
             function applyDamageEffects(winnerClass, damage) {
+                const defenderClass = winnerClass === X_CLASS ? O_CLASS : X_CLASS;
+                const defenderChar = defenderClass === X_CLASS ? 'x' : 'o';
+                showFloatingText(defenderChar, `-${Math.round(damage)}`, 'damage');
+
                 if (winnerClass === X_CLASS) healthO = Math.max(0, healthO - damage);
                 else healthX = Math.max(0, healthX - damage);
                 updateHealthBars();
@@ -2526,6 +2589,8 @@
                     }
                     if (skills[winnerClass].vampirism) {
                         const healAmount = Math.floor(finalDamage * 0.5);
+                        const winnerChar = winnerClass === X_CLASS ? 'x' : 'o';
+                        showFloatingText(winnerChar, `+${healAmount}`, 'heal');
                         if (winnerClass === X_CLASS) { healthX = Math.min(100, healthX + healAmount); } else { healthO = Math.min(100, healthO + healAmount); }
                         logAction(`Vampirismo 🩸 cura ${healAmount} de vida para ${winnerClass.toUpperCase()}.`, `player-${winnerClass}-log`);
                         playSound(healSound);
@@ -2635,7 +2700,7 @@
             }
             
             function handleCaoticClick(e) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 const cell = e.target;
                 if (gameMode.startsWith('caotico_single') && isOTurn) return;
                 processCaoticMove(cell);
@@ -2653,6 +2718,8 @@
                     }
                     if (eventManager.isCursed(cell)) {
                         logAction(`A Célula Amaldiçoada foi ativada! Ambos perdem 10 de vida.`, 'system-log');
+                        showFloatingText('x', '-10', 'damage');
+                        showFloatingText('o', '-10', 'damage');
                         healthX = Math.max(0, healthX - 10);
                         healthO = Math.max(0, healthO - 10);
                         updateHealthBars();
@@ -2674,7 +2741,7 @@
             }
             
             function handleVsAiClick(e) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 if (isOTurn || !isGameActive) return;
                 const cell = e.target;
                 if (!isGameActive || cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS) || cell.classList.contains('interdicted')) return;
@@ -2682,7 +2749,7 @@
             }
             
             function handleLocalClick(e) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 const cell = e.target;
                 if (!isGameActive || cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS) || cell.classList.contains('interdicted')) return;
                 const currentClass = isOTurn ? O_CLASS : X_CLASS;
@@ -2690,7 +2757,7 @@
             }
             
             function handleTaticoClick(e) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 const cell = e.target;
                 if (targetingState) {
                     if (targetingState.skill === 'bomb') { handleBombExecution(cell); }
@@ -2721,12 +2788,12 @@
             }
             
             // =======================================================================
-            // NOVA ARQUITETURA DE INTELIGÊNCIA ARTIFICIAL (INÍCIO)
+            // ARQUITETURA DE INTELIGÊNCIA ARTIFICIAL (CORRIGIDA)
             // =======================================================================
 
             function triggerAiTurn() {
                 if (isGameActive && isOTurn && (gameMode.includes('single') || gameMode === 'campaign')) {
-                    if (isPaused) return; // VERIFICAÇÃO DE PAUSE NA IA
+                    if (isPaused) return;
                     boardElement.classList.add('locked');
 
                     let aiBrain;
@@ -2899,19 +2966,41 @@
             }
 
             function aiBrainCaoticoFacil() {
-                aiMoveFacil();
+                const safeCells = cellElements.filter(c => {
+                    return !c.classList.contains(X_CLASS) &&
+                           !c.classList.contains(O_CLASS) &&
+                           !c.classList.contains('black-hole') &&
+                           c.dataset.cellIndex != interdictedCellIndex &&
+                           !eventManager.isMined(c) &&
+                           !eventManager.isCursed(c);
+                });
+
+                const cellsToConsider = safeCells.length > 0 ? safeCells : cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && !c.classList.contains('black-hole'));
+                
+                const winningMove = cellsToConsider.find(cell => wouldWin(O_CLASS, cell, movesO));
+
+                if (winningMove) {
+                    processCaoticMove(winningMove);
+                } else if (cellsToConsider.length > 0) {
+                    const randomCell = cellsToConsider[Math.floor(Math.random() * cellsToConsider.length)];
+                    processCaoticMove(randomCell);
+                } else {
+                    swapTurns();
+                }
+                boardElement.classList.remove('locked');
             }
 
             function aiBrainCaoticoNormal() {
                 const safeCells = cellElements.filter(c => {
                     return !c.classList.contains(X_CLASS) && 
                            !c.classList.contains(O_CLASS) &&
+                           !c.classList.contains('black-hole') &&
                            c.dataset.cellIndex != interdictedCellIndex &&
                            !eventManager.isMined(c) && 
                            !eventManager.isCursed(c);
                 });
 
-                const cellsToConsider = safeCells.length > 0 ? safeCells : cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS));
+                const cellsToConsider = safeCells.length > 0 ? safeCells : cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && !c.classList.contains('black-hole'));
                 
                 const winningMove = cellsToConsider.find(cell => wouldWin(O_CLASS, cell, movesO));
                 const blockingMove = cellsToConsider.find(cell => wouldWin(X_CLASS, cell, movesX));
@@ -2930,12 +3019,20 @@
             }
 
             function aiBrainCaoticoDificil() {
-                const availableCells = cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && c.dataset.cellIndex != interdictedCellIndex);
-                
+                const safeCells = cellElements.filter(c => {
+                    return !c.classList.contains(X_CLASS) &&
+                           !c.classList.contains(O_CLASS) &&
+                           !c.classList.contains('black-hole') &&
+                           c.dataset.cellIndex != interdictedCellIndex &&
+                           !eventManager.isMined(c) &&
+                           !eventManager.isCursed(c);
+                });
+                const cellsToConsider = safeCells.length > 0 ? safeCells : cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && !c.classList.contains('black-hole'));
+
                 if (eventManager && eventManager.portals.cells.length > 0) {
                     for (const portal of eventManager.portals.cells) {
                         const otherPortal = eventManager.getOtherPortal(portal);
-                        if (availableCells.includes(portal) && wouldWin(O_CLASS, otherPortal, movesO)) {
+                        if (cellsToConsider.includes(portal) && wouldWin(O_CLASS, otherPortal, movesO)) {
                             logAction("A IA usa um portal para uma jogada de mestre!", 'player-o-log');
                             processCaoticMove(portal);
                             boardElement.classList.remove('locked');
@@ -2944,16 +3041,36 @@
                     }
                 }
 
-                aiBrainCaoticoNormal();
+                const winningMove = cellsToConsider.find(cell => wouldWin(O_CLASS, cell, movesO));
+                const blockingMove = cellsToConsider.find(cell => wouldWin(X_CLASS, cell, movesX));
+                const center = cellsToConsider.find(c => c.dataset.cellIndex === '4');
+                const corners = [0, 2, 6, 8].map(i => cellElements[i]).filter(c => cellsToConsider.includes(c));
+
+                if (winningMove) {
+                    processCaoticMove(winningMove);
+                } else if (blockingMove) {
+                    processCaoticMove(blockingMove);
+                } else if (center) {
+                    processCaoticMove(center);
+                } else if (corners.length > 0) {
+                    processCaoticMove(corners[Math.floor(Math.random() * corners.length)]);
+                } else if (cellsToConsider.length > 0) {
+                    processCaoticMove(cellsToConsider[Math.floor(Math.random() * cellsToConsider.length)]);
+                } else {
+                    swapTurns();
+                }
+                boardElement.classList.remove('locked');
             }
 
+
             // =======================================================================
-            // FIM DA NOVA ARQUITETURA DE INTELIGÊNCIA ARTIFICIAL
+            // FIM DA SEÇÃO DE IA
             // =======================================================================
             
             function activateHeal(player, skillId) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 if (playerSkillsUsed[player]?.includes(skillId)) return;
+                showFloatingText(player, `+${HEAL_AMOUNT}`, 'heal');
                 playSound(healSound);
                 if (player === X_CLASS) {
                     healthX = Math.min(100, healthX + HEAL_AMOUNT);
@@ -2968,7 +3085,7 @@
             }
 
             function activateBomb(player, skillId) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 if (playerSkillsUsed[player]?.includes(skillId)) return;
                 const enemyClass = player === X_CLASS ? O_CLASS : X_CLASS;
                 const enemyPieces = cellElements.filter(c => c.classList.contains(enemyClass));
@@ -3009,7 +3126,7 @@
             }
 
             function activateShield(player, skillId) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 if (playerSkillsUsed[player]?.includes(skillId) || (skills[player] && skills[player].shieldActive)) return;
                 
                 playSound(shieldSound);
@@ -3025,7 +3142,7 @@
             }
 
             function activateSacrifice(player, skillId) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 if (playerSkillsUsed[player]?.includes(skillId)) return;
                 const ownPieces = cellElements.filter(c => c.classList.contains(player));
                 if (ownPieces.length === 0) {
@@ -3060,7 +3177,7 @@
             }
             
             function activateSwap(player, skillId) {
-                if (isPaused) return; // VERIFICAÇÃO DE PAUSE
+                if (isPaused) return;
                 if (playerSkillsUsed[player]?.includes(skillId)) return;
                 const allPieces = cellElements.filter(c => c.classList.contains(X_CLASS) || c.classList.contains(O_CLASS));
                 if (allPieces.length < 2) {
@@ -3123,7 +3240,6 @@
                 updateSkillButtonsState();
             }
             
-            // ===== FUNÇÃO JAVASCRIPT QUE ATIVA AS ANIMAÇÕES (RESTAURADA) =====
             function drawWinningLaserLine(winnerClass, combo) {
                 const comboStr = [...combo].sort().join('');
                 const lineClasses = {
