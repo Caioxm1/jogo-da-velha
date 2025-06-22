@@ -1098,55 +1098,51 @@
             pointer-events: none;
         }
 
-        /* ===== INÍCIO DA CORREÇÃO DO LASER ===== */
-        #winning-laser-line {
-            position: absolute;
-            background-color: var(--laser-color, var(--interdicao-cor));
-            box-shadow: 0 0 10px 5px var(--laser-color, var(--interdicao-cor)), 0 0 20px 10px rgba(255, 0, 0, 0.5);
-            border-radius: 5px;
-            z-index: 10;
-            transform-origin: center;
-            opacity: 0;
-            transition: opacity 0.3s ease-out;
-            width: 0; 
-            height: 0;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); 
-        }
+/* ===== INÍCIO DA CORREÇÃO DO LASER ===== */
+#winning-laser-line {
+    position: absolute;
+    background-color: var(--laser-color, var(--interdicao-cor));
+    box-shadow: 0 0 10px 5px var(--laser-color, var(--interdicao-cor)), 0 0 20px 10px rgba(255, 0, 0, 0.5);
+    border-radius: 5px;
+    z-index: 10;
+    transform-origin: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    width: 0; 
+    height: 0;
+    /* As propriedades top, left e transform foram removidas daqui */
+}
 
-        @keyframes draw-line {
-            to { width: 105%; }
-        }
-        @keyframes draw-line-diag {
-            to { width: 145%; }
-        }
+@keyframes draw-line {
+    to { width: 105%; }
+}
+@keyframes draw-line-diag {
+    to { width: 145%; }
+}
 
-        #winning-laser-line.show {
-            opacity: 1;
-            height: 10px;
-        }
+#winning-laser-line.show {
+    opacity: 1;
+    height: 10px;
+}
 
+/* Linhas Horizontais */
+#winning-laser-line.line-row-0 { top: 17.5%; left: 50%; transform: translateX(-50%); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-row-1 { top: 50%;   left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-row-2 { top: 82.5%; left: 50%; transform: translateX(-50%); animation: draw-line 0.5s forwards; }
 
-        /* Linhas Horizontais */
-        .line-row-0 { top: 17.5%; animation: draw-line 0.5s forwards; }
-        .line-row-1 { top: 50%;    animation: draw-line 0.5s forwards; }
-        .line-row-2 { top: 82.5%; animation: draw-line 0.5s forwards; }
+/* Linhas Verticais */
+#winning-laser-line.line-col-0 { top: 50%; left: 17.5%; transform: translateY(-50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-col-1 { top: 50%; left: 50%;   transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-col-2 { top: 50%; left: 82.5%;  transform: translateY(-50%) rotate(90deg); animation: draw-line 0.5s forwards; } /* Corrigido o erro de 82.5%% */
 
+/* Linhas Diagonais */
+#winning-laser-line.line-diag-0 { top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg);  animation: draw-line-diag 0.5s forwards; }
+#winning-laser-line.line-diag-1 { top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); animation: draw-line-diag 0.5s forwards; }
 
-        /* Linhas Verticais */
-        .line-col-0 { left: 17.5%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-        .line-col-1 { left: 50%;    transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-        .line-col-2 { left: 82.5%%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-
-        /* Linhas Diagonais (não precisam de ajuste, pois o centro 50%/50% já é correto) */
-        .line-diag-0 { transform: translate(-50%, -50%) rotate(45deg);  animation: draw-line-diag 0.5s forwards; }
-        .line-diag-1 { transform: translate(-50%, -50%) rotate(-45deg); animation: draw-line-diag 0.5s forwards; }
-
-        .winning-laser-active {
-            /* Esta classe agora é apenas um marcador, os estilos estão acima */
-        }
-        /* ===== FIM DA CORREÇÃO DO LASER ===== */
+.winning-laser-active {
+    /* Esta classe agora é apenas um marcador, os estilos estão acima */
+}
+/* ===== FIM DA CORREÇÃO DO LASER ===== */
 
         .cell.winning-cell-pulse {
             animation: winning-cell-pulse 1s infinite alternate;
