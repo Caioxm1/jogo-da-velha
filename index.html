@@ -1098,7 +1098,7 @@
             pointer-events: none;
         }
 
-/* ===== INÍCIO DA CORREÇÃO DO LASER ===== */
+/* ===== CORREÇÃO DEFINITIVA DO LASER ===== */
 #winning-laser-line {
     position: absolute;
     background-color: var(--laser-color, var(--interdicao-cor));
@@ -1110,7 +1110,6 @@
     transition: opacity 0.3s ease-out;
     width: 0; 
     height: 0;
-    /* As propriedades top, left e transform foram removidas daqui */
 }
 
 @keyframes draw-line {
@@ -1126,14 +1125,14 @@
 }
 
 /* Linhas Horizontais */
-#winning-laser-line.line-row-0 { top: 17.5%; left: 50%; transform: translateX(-50%); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-row-0 { top: 17.5%; left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
 #winning-laser-line.line-row-1 { top: 50%;   left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
-#winning-laser-line.line-row-2 { top: 82.5%; left: 50%; transform: translateX(-50%); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-row-2 { top: 82.5%; left: 50%; transform: translate(-50%, -50%); animation: draw-line 0.5s forwards; }
 
 /* Linhas Verticais */
-#winning-laser-line.line-col-0 { top: 50%; left: 17.5%; transform: translateY(-50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+#winning-laser-line.line-col-0 { top: 50%; left: 17.5%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
 #winning-laser-line.line-col-1 { top: 50%; left: 50%;   transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-#winning-laser-line.line-col-2 { top: 50%; left: 82.5%;  transform: translateY(-50%) rotate(90deg); animation: draw-line 0.5s forwards; } /* Corrigido o erro de 82.5%% */
+#winning-laser-line.line-col-2 { top: 50%; left: 82.5%;  transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
 
 /* Linhas Diagonais */
 #winning-laser-line.line-diag-0 { top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg);  animation: draw-line-diag 0.5s forwards; }
@@ -1142,8 +1141,8 @@
 .winning-laser-active {
     /* Esta classe agora é apenas um marcador, os estilos estão acima */
 }
-/* ===== FIM DA CORREÇÃO DO LASER ===== */
-
+/* ===== FIM DA CORREÇÃO ===== */
+        
         .cell.winning-cell-pulse {
             animation: winning-cell-pulse 1s infinite alternate;
         }
