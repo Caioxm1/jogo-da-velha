@@ -851,7 +851,7 @@
         #history-log-content::-webkit-scrollbar-track { background: transparent; }
         #history-log-content::-webkit-scrollbar-thumb { background-color: var(--cor-o); border-radius: 10px; }
         
-        /* ===== INÍCIO DO AJUSTE DA TELA DE CAMPANHA ===== */
+        /* ===== INÍCIO DO AJUSTE DA TELA DE CAMPANHA (VERSÃO CORRIGIDA) ===== */
 
         /* Garante que o layout da tela da campanha distribua o espaço corretamente */
         #campaign-map-screen {
@@ -859,11 +859,18 @@
             gap: 1rem;
         }
 
+        /* Faz o título e o botão de voltar não encolherem */
+        #campaign-map-screen > h1,
+        #campaign-map-screen > #back-to-menu-from-campaign {
+            flex-shrink: 0;
+        }
+
         /* Transforma a grade de níveis em uma área rolável */
         #campaign-level-grid {
-            flex-grow: 1; /* Faz a grade ocupar todo o espaço vertical disponível */
-            overflow-y: auto; /* ATIVA A ROLAGEM VERTICAL apenas quando necessário */
-            padding: 0.5rem 1rem; /* Espaçamento interno para os botões não colarem nas bordas e na barra de rolagem */
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0.5rem 1rem;
+            min-height: 0; /* Correção crítica para o scroll em layout flex */
         }
 
         /* Estiliza a barra de rolagem para combinar com o jogo */
