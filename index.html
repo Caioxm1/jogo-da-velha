@@ -223,7 +223,8 @@
         .skill-deck-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); /* Reduz o tamanho mínimo para caber mais em telas estreitas */
-            gap: 2.3rem; /* Reduz o espaçamento */
+            gap: 1.2rem; /* Reduz o espaçamento */
+            align-content: start; /* Alinha as linhas no topo, evitando que se estiquem */
         }
 
         .player-kit-slots {
@@ -869,6 +870,7 @@
         #campaign-level-grid {
             flex-grow: 1;
             overflow-y: auto;
+            overflow-x: hidden; /* PROÍBE o scroll horizontal indesejado */
             padding: 0.5rem 1rem;
             min-height: 0; /* Correção crítica para o scroll em layout flex */
         }
