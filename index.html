@@ -851,8 +851,7 @@
         #history-log-content::-webkit-scrollbar-track { background: transparent; }
         #history-log-content::-webkit-scrollbar-thumb { background-color: var(--cor-o); border-radius: 10px; }
         
-        /* ===== INÍCIO DO AJUSTE DA TELA DE CAMPANHA (VERSÃO DEFINITIVA) ===== */
-
+        /* ===== AJUSTE DA TELA DE CAMPANHA (VERSÃO DEFINITIVA) ===== */
         #campaign-map-screen {
             justify-content: space-between; 
             gap: 1rem;
@@ -863,23 +862,17 @@
             flex-shrink: 0; /* Impede que o título e o botão encolham */
         }
         
-        /* ATENÇÃO: Esta é a regra principal que foi ajustada */
         #campaign-level-grid {
-            /* HERDA O 'display: grid' DA CLASSE '.skill-deck-grid' */
-            
-            /* Layout e Rolagem */
-            flex-grow: 1; /* Permite que a grade ocupe o espaço disponível */
-            min-height: 0; /* A CORREÇÃO MÁGICA: Permite que a grade encolha e o scroll funcione */
-            overflow-y: auto;   /* Habilita o scroll vertical QUANDO NECESSÁRIO */
-            overflow-x: hidden; /* Proíbe o scroll horizontal indesejado */
-
-            /* Espaçamento */
-            gap: 1.2rem; /* SOBRESCREVE o 'gap' da classe, garantindo o espaçamento */
-            align-content: start; /* Agrupa as linhas no topo */
-            padding: 1rem; /* Espaçamento interno para os botões não colarem nas bordas */
+            flex-grow: 1; 
+            min-height: 0; 
+            overflow-y: auto;  
+            overflow-x: hidden; 
+            display: grid;
+            gap: 1.2rem; 
+            align-content: start; 
+            padding: 1rem;
         }
 
-        /* Estiliza a barra de rolagem da campanha para combinar com o jogo */
         #campaign-level-grid::-webkit-scrollbar {
             width: 8px;
         }
@@ -896,8 +889,6 @@
             background-color: #ffca6e; 
         }
 
-        /* ===== FIM DO AJUSTE ===== */
-        
         #campaign-level-grid .menu-button {
             width: auto;
             min-width: 100px;
@@ -917,6 +908,8 @@
             box-shadow: inset 0 -4px 0 #208985;
             color: var(--cor-fundo);
         }
+
+        /* ===== FIM DO AJUSTE ===== */
 
         @keyframes shine-sweep {
             100% { left: 150%; }
@@ -1105,6 +1098,51 @@
             pointer-events: none;
         }
 
+        /* ===== INÍCIO DA CORREÇÃO DO LASER ===== */
+        #winning-laser-line {
+            position: absolute;
+            background-color: var(--laser-color, var(--interdicao-cor));
+            box-shadow: 0 0 10px 5px var(--laser-color, var(--interdicao-cor)), 0 0 20px 10px rgba(255, 0, 0, 0.5);
+            border-radius: 5px;
+            z-index: 10;
+            transform-origin: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            width: 0; 
+            height: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); 
+        }
+
+        @keyframes draw-line {
+            to { width: 105%; }
+        }
+        @keyframes draw-line-diag {
+            to { width: 145%; }
+        }
+
+        #winning-laser-line.show {
+            opacity: 1;
+            height: 10px;
+        }
+
+        .line-row-0 { top: 16.66%; animation: draw-line 0.5s forwards; }
+        .line-row-1 { top: 50%;    animation: draw-line 0.5s forwards; }
+        .line-row-2 { top: 83.33%; animation: draw-line 0.5s forwards; }
+
+        .line-col-0 { left: 16.66%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+        .line-col-1 { left: 50%;    transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+        .line-col-2 { left: 83.33%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
+        
+        .line-diag-0 { transform: translate(-50%, -50%) rotate(45deg);  animation: draw-line-diag 0.5s forwards; }
+        .line-diag-1 { transform: translate(-50%, -50%) rotate(-45deg); animation: draw-line-diag 0.5s forwards; }
+
+        .winning-laser-active {
+            /* Esta classe agora é apenas um marcador, os estilos estão acima */
+        }
+        /* ===== FIM DA CORREÇÃO DO LASER ===== */
+
         .cell.winning-cell-pulse {
             animation: winning-cell-pulse 1s infinite alternate;
         }
@@ -1178,7 +1216,7 @@
             }
 
             #game-screen {
-                justify-content: space-around;
+                 justify-content: space-around;
             }
 
             .board {
@@ -1186,59 +1224,6 @@
                 padding: 10px;
             }
         }
-
-        /* =================================================== */
-        /* === AJUSTE DEFINITIVO PARA A LINHA LASER VENCEDORA === */
-        /* =================================================== */
-        #winning-laser-line {
-            /* Estilos base que já existiam */
-            position: absolute;
-            background-color: var(--laser-color, var(--interdicao-cor));
-            box-shadow: 0 0 10px 5px var(--laser-color, var(--interdicao-cor)), 0 0 20px 10px rgba(255, 0, 0, 0.5);
-            border-radius: 5px;
-            z-index: 10;
-            
-            /* Novos estilos para o posicionamento e animação */
-            transform-origin: center;
-            opacity: 0;
-            transition: opacity 0.3s ease-out;
-            
-            /* Remove estilos antigos que serão controlados pelas classes */
-            width: 0; 
-            height: 0;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* Começa invisível no centro */
-        }
-        
-        /* Animação de "desenho" da linha */
-        @keyframes draw-line {
-            to { width: 105%; } /* 105% para cobrir as células de ponta a ponta */
-        }
-        @keyframes draw-line-diag {
-            to { width: 145%; } /* A diagonal é mais longa (sqrt(2)) */
-        }
-        
-        /* Mostra a linha e inicia a animação */
-        #winning-laser-line.show {
-            opacity: 1;
-            height: 10px; /* Define a espessura da linha */
-        }
-        
-        /* === 8 Posições de Vitória Pré-definidas === */
-        /* Linhas Horizontais */
-        .line-row-0 { top: 16.66%; animation: draw-line 0.5s forwards; }
-        .line-row-1 { top: 50%;    animation: draw-line 0.5s forwards; }
-        .line-row-2 { top: 83.33%; animation: draw-line 0.5s forwards; }
-        
-        /* Linhas Verticais */
-        .line-col-0 { left: 16.66%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-        .line-col-1 { left: 50%;    transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-        .line-col-2 { left: 83.33%; transform: translate(-50%, -50%) rotate(90deg); animation: draw-line 0.5s forwards; }
-        
-        /* Linhas Diagonais */
-        .line-diag-0 { transform: translate(-50%, -50%) rotate(45deg);  animation: draw-line-diag 0.5s forwards; }
-        .line-diag-1 { transform: translate(-50%, -50%) rotate(-45deg); animation: draw-line-diag 0.5s forwards; }
 
     </style>
 </head>
@@ -1493,7 +1478,7 @@
                 'sacrifice': { id: 'sacrifice', name: 'Sacrifício', icon: '💀', description: 'Destrói uma peça sua para DOBRAR o dano do próximo ponto.', type: 'active', implemented: true },
                 'swap': { id: 'swap', name: 'Troca', icon: '🔁', description: 'Troca a posição de duas peças no tabuleiro.', type: 'active', implemented: true },
                 'shove': { id: 'shove', name: 'Empurrão', icon: '🖐️', description: 'Empurra uma peça para uma casa vazia adjacente.', type: 'active', implemented: true },
-                'mirror': { id: 'mirror', name: 'Espelho', icon: '🪞', description: 'Cancela a próxima habilidade inimiga.', type: 'active', implemented: true },
+                'mirror': { id: 'mirror', name: 'Espelho', icon: '�', description: 'Cancela a próxima habilidade inimiga.', type: 'active', implemented: true },
             };
 
             const LEVEL_CONFIG = Array.from({ length: 80 }, (_, i) => {
@@ -1603,7 +1588,7 @@
                 }
                 // Nível 80: Chefe Final do Espelho
                 else if (level === 80) {
-                    return { level, aiName: "O Campeão Supremo", aiDifficulty: 'hard', aiSkills: ['mirror', 'shield', 'swap', 'shove', 'sacrifice'], unlocksSkill: 'mirror', mission: { description: "Derrote a lenda para desbloquear o Espelho  e completar sua jornada.", isCompleted: (gd) => gd.playerWon } };
+                    return { level, aiName: "O Campeão Supremo", aiDifficulty: 'hard', aiSkills: ['mirror', 'shield', 'swap', 'shove', 'sacrifice'], unlocksSkill: 'mirror', mission: { description: "Derrote a lenda para desbloquear o Espelho 🪞 e completar sua jornada.", isCompleted: (gd) => gd.playerWon } };
                 }
                 
                 return null; // Caso algum nível não seja coberto
@@ -1927,8 +1912,8 @@
                     if (currentLevelData.level === 35 && !campaignProgress.unlockedThirdSlot) {
                         campaignProgress.unlockedThirdSlot = true;
                         const notificationMessage = `<h3>Arsenal Expandido!</h3>
-                                                 <p>Você provou seu valor tático. Como recompensa, o 3º slot de habilidade foi desbloqueado para os modos **Batalha Tática** e **Partida Rápida**!</p>
-                                                 <p><i>(Na Campanha, o desafio continua com 2 slots).</i></p>`;
+                                                     <p>Você provou seu valor tático. Como recompensa, o 3º slot de habilidade foi desbloqueado para os modos **Batalha Tática** e **Partida Rápida**!</p>
+                                                     <p><i>(Na Campanha, o desafio continua com 2 slots).</i></p>`;
                         showNotification(notificationMessage.replace(/\n\s+/g, '\n'));
                     }
 
@@ -2007,7 +1992,8 @@
                 updateHealthBars();
                 updateOldestPieceIndicator();
                 
-                winningLaserLine.className = ''; // Reset laser line classes
+                winningLaserLine.className = 'winning-laser-active'; // Reseta o laser
+                winningLaserLine.classList.remove('show');
                 boardElement.classList.remove('dimmed-board');
                 cellElements.forEach(cell => {
                     cell.classList.remove('winning-cell-pulse');
@@ -2082,6 +2068,55 @@
                     // This part can be expanded later
                 }
                 updateTurnIndicator();
+            }
+            
+            function setupSkillButtons() {
+                skillsXContainer.innerHTML = '';
+                skillsOContainer.innerHTML = '';
+                
+                const createButton = (skill, playerClass) => {
+                    const button = document.createElement('button');
+                    button.className = 'skill-button';
+                    button.innerHTML = skill.icon;
+                    
+                    if (skill.type === 'active') {
+                        button.id = `${skill.id}-${playerClass}`;
+                        button.title = `${skill.name}: ${skill.description}`;
+                        if (skill.implemented && playerClass === X_CLASS) { // Only player X can click
+                            button.addEventListener('click', () => {
+                                const skillActions = {
+                                    'bomb': () => activateBomb(X_CLASS, 'bomb'), 'heal': () => activateHeal(X_CLASS, 'heal'),
+                                    'shield': () => activateShield(X_CLASS, 'shield'), 'sacrifice': () => activateSacrifice(X_CLASS, 'sacrifice'),
+                                    'mirror': () => activateMirror(X_CLASS, 'mirror'), 'swap': () => activateSwap(X_CLASS, 'swap'),
+                                    'shove': () => activateShove(X_CLASS, 'shove'),
+                                };
+                                skillActions[skill.id]?.();
+                            });
+                        } else {
+                            button.disabled = true;
+                        }
+                    } else { // Passive skills
+                        button.id = `${skill.id}-indicator-${playerClass}`;
+                        button.title = `${skill.name} (Passiva): ${skill.description}`;
+                        button.disabled = true;
+                        button.style.cursor = 'help';
+                    }
+                    return button;
+                }
+
+                Object.keys(skills.x).forEach(skillId => {
+                     if (skills.x[skillId] === true && ALL_SKILLS[skillId]) {
+                         skillsXContainer.appendChild(createButton(ALL_SKILLS[skillId], X_CLASS));
+                     }
+                });
+                
+                Object.keys(skills.o).forEach(skillId => {
+                    if (skills.o[skillId] === true && ALL_SKILLS[skillId]) { 
+                        skillsOContainer.appendChild(createButton(ALL_SKILLS[skillId], O_CLASS));
+                    }
+                });
+                
+                updateSkillButtonsState();
             }
             
             function drainHealth() {
@@ -2206,7 +2241,8 @@
                     drawWinningLaserLine(winnerClass, winningCombo);
                     setTimeout(() => {
                         boardElement.classList.remove('dimmed-board', 'locked');
-                        winningLaserLine.className = ''; // Reset laser line
+                        winningLaserLine.className = 'winning-laser-active'; // Reseta o laser
+                        winningLaserLine.classList.remove('show');
                         winningCombo.forEach(index => {
                              cellElements[index].classList.remove('winning-cell-pulse');
                              cellElements[index].style.removeProperty('--pulse-color');
@@ -2396,11 +2432,6 @@
             }
 
             // --- AI LOGIC ---
-
-            // =========================================================================
-            // AI Difficulty Level - Easy
-            // Behavior: Makes a completely random move from available cells.
-            // =========================================================================
             function aiMoveFacil() {
                 const availableCells = cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && c.dataset.cellIndex != interdictedCellIndex);
                 
@@ -2414,39 +2445,26 @@
                 boardElement.classList.remove('locked');
             }
 
-            // =========================================================================
-            // AI Difficulty Level - Normal
-            // Behavior: Follows a simple set of rules: Win > Block > Center > Corner > Random.
-            // Does not use skills strategically.
-            // =========================================================================
             function aiMoveNormal() {
                 const availableCells = cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && c.dataset.cellIndex != interdictedCellIndex);
-
-                // 1. Win now with a normal move
                 const winningMove = availableCells.find(cell => wouldWin(O_CLASS, cell, movesO));
                 if (winningMove) {
                     placeMark(winningMove, O_CLASS);
                     boardElement.classList.remove('locked');
                     return;
                 }
-
-                // 2. Block player's win with a normal move
                 const blockingMove = availableCells.find(cell => wouldWin(X_CLASS, cell, movesX));
                 if (blockingMove) {
                     placeMark(blockingMove, O_CLASS);
                     boardElement.classList.remove('locked');
                     return;
                 }
-                
-                // 3. Take the center
                 const centerCell = availableCells.find(cell => cell.dataset.cellIndex === '4');
                 if (centerCell) {
                     placeMark(centerCell, O_CLASS);
                     boardElement.classList.remove('locked');
                     return;
                 }
-
-                // 4. Take a corner
                 const corners = [0, 2, 6, 8].map(i => cellElements[i]).filter(c => availableCells.includes(c));
                 if (corners.length > 0) {
                     const randomCorner = corners[Math.floor(Math.random() * corners.length)];
@@ -2454,8 +2472,6 @@
                     boardElement.classList.remove('locked');
                     return;
                 }
-
-                // 5. If all else fails, make a random move
                 if (availableCells.length > 0) {
                     const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
                     placeMark(randomCell, O_CLASS);
@@ -2466,31 +2482,15 @@
                 boardElement.classList.remove('locked');
             }
 
-
-            // =========================================================================
-            // AI Difficulty Level - Hard
-            // Behavior: Strategic thinking, uses skills.
-            // =========================================================================
             function getAiDificilDecision() {
                 const availableCells = cellElements.filter(c => !c.classList.contains(X_CLASS) && !c.classList.contains(O_CLASS) && c.dataset.cellIndex != interdictedCellIndex);
                 const aiSkills = skills.o;
                 const playerSkills = skills.x;
-
-                // 1. Check for winning moves with skills (Complex logic can be added later)
-                
-                // 2. Win now with a normal move
                 const winningMove = availableCells.find(cell => wouldWin(O_CLASS, cell, movesO));
                 if (winningMove) return { type: 'move', cell: winningMove };
-
-                // 3. Block player's win with skills (Complex logic can be added later)
-                
-                // 4. Block player's win with a normal move
                 const blockingMove = availableCells.find(cell => wouldWin(X_CLASS, cell, movesX));
                 if (blockingMove) return { type: 'move', cell: blockingMove };
-
-                // 5. Use skills intelligently
                 if (aiSkills.heal && healthO < 40 && !playerSkillsUsed.o.includes('heal')) return { type: 'skill_heal' };
-                
                 const playerIsAboutToWin = availableCells.some(cell => wouldWin(X_CLASS, cell, movesX));
                 if (aiSkills.mirror && !aiSkills.mirrorActive && playerSkillsUsed.x.length < getMaxKitSize()) {
                     return { type: 'skill_mirror' };
@@ -2502,8 +2502,6 @@
                      const sacrificable = movesO[0];
                      if(sacrificable) return { type: 'skill_sacrifice', cell: sacrificable };
                 }
-                
-                // 6. Default move logic (Center > Corner > Random)
                 if (availableCells.length > 0) {
                     const center = cellElements[4];
                     if (availableCells.includes(center)) return { type: 'move', cell: center };
@@ -2546,16 +2544,10 @@
                 boardElement.classList.remove('locked');
             }
             
-            // =========================================================================
-            // AI Controller - Selects the correct AI function based on difficulty
-            // =========================================================================
             function triggerAiTurn() {
                 if (isGameActive && isOTurn && (gameMode.includes('single') || gameMode === 'campaign')) {
                     boardElement.classList.add('locked');
-                    
                     let aiMoveHandler;
-
-                    // Choose the AI logic based on the difficulty setting
                     if (aiDifficulty === 'easy') {
                         aiMoveHandler = aiMoveFacil;
                     } else if (aiDifficulty === 'normal') {
@@ -2563,48 +2555,39 @@
                     } else { // 'hard'
                         aiMoveHandler = aiMoveDificil;
                     }
-                    
                     aiTimeout = setTimeout(aiMoveHandler, 1000 + Math.random() * 500);
                 }
             }
 
             // --- SKILL FUNCTIONS ---
-
              function activateHeal(player, skillId) {
                  if (!isGameActive) return;
                  if (handleMirrorReflection(player, skillId)) return;
-                 
                  const isPlayerX = player === X_CLASS;
                  if (playerSkillsUsed[isPlayerX ? 'x' : 'o'].includes(skillId)) return;
-                 
                  let currentHealth = isPlayerX ? healthX : healthO;
                  let maxHealth = 100;
                  if (gameMode === 'campaign' && currentLevelData && currentLevelData.customInitialHealth) {
-                      maxHealth = isPlayerX ? (currentLevelData.customInitialHealth.x || 100) : (currentLevelData.customInitialHealth.o || 100);
+                     maxHealth = isPlayerX ? (currentLevelData.customInitialHealth.x || 100) : (currentLevelData.customInitialHealth.o || 100);
                  }
-
                  if (currentHealth >= maxHealth) {
-                       if(isPlayerX) showNotification("Sua vida já está cheia!");
-                       return;
+                      if(isPlayerX) showNotification("Sua vida já está cheia!");
+                      return;
                  }
-                 
                  const healthToSet = Math.min(maxHealth, currentHealth + HEAL_AMOUNT);
                  if (isPlayerX) healthX = healthToSet;
                  else healthO = healthToSet;
-                 
                  playerSkillsUsed[isPlayerX ? 'x' : 'o'].push(skillId);
-                 
                  logAction(`${isPlayerX ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText} usa Cura ❤️‍🩹 e recupera ${HEAL_AMOUNT} de vida.`, `player-${player}-log`);
                  playSound(healSound);
                  updateHealthBars();
                  updateSkillButtonsState();
-
                  if(!isPlayerX){
-                       setTimeout(() => swapTurns(), 500);
+                      setTimeout(() => swapTurns(), 500);
                  } else {
-                       swapTurns();
+                      swapTurns();
                  }
-            }
+             }
 
              function activateBomb(player, skillId){ 
                  if (handleMirrorReflection(player, skillId)) return;
@@ -2616,67 +2599,53 @@
                  const playerSkills = player === X_CLASS ? skills.x : skills.o;
                  if(playerSkills.shieldActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId)) return;
                  if (handleMirrorReflection(player, skillId)) return;
-
                  playerSkills.shieldActive = true;
                  playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].push(skillId);
-
                  const charElement = player === X_CLASS ? charX : charO;
                  charElement.classList.add('shielded');
                  logAction(`${player === X_CLASS ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText} ativa o Escudo 🛡️.`, `player-${player}-log`);
                  playSound(shieldSound);
                  updateSkillButtonsState();
-
                  if(player === O_CLASS){
-                     setTimeout(() => swapTurns(), 500);
+                       setTimeout(() => swapTurns(), 500);
                  } else {
-                     swapTurns();
+                      swapTurns();
                  }
-            }
+             }
 
             function activateSacrifice(player, skillId) {
                 if (!isGameActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId) || targetingState) return;
                 if (handleMirrorReflection(player, skillId)) return;
-                
                 targetingState = { skill: 'sacrifice', player: player };
                 boardElement.classList.add('targeting', 'targeting-sacrifice');
                 boardElement.classList.toggle('is-x-turn', player === X_CLASS);
                 boardElement.classList.toggle('is-o-turn', player === O_CLASS);
-
                 logAction("Selecione uma de suas peças para sacrificar.", "system-log");
                 updateSkillButtonsState();
             }
 
             function handleSacrificeExecution(cell) {
                 if (!targetingState || targetingState.skill !== 'sacrifice') return;
-                
                 const player = targetingState.player;
                 const isPlayerX = player === X_CLASS;
                 const cellIsX = cell.classList.contains(X_CLASS);
                 const cellIsO = cell.classList.contains(O_CLASS);
-
                 if ((isPlayerX && !cellIsX) || (!isPlayerX && !cellIsO)) {
                     if(isPlayerX) showNotification("Você só pode sacrificar suas próprias peças!");
                     return;
                 }
-
                 playerSkillsUsed[player].push('sacrifice');
-
                 const moves = isPlayerX ? movesX : movesO;
                 const moveIndex = moves.indexOf(cell);
                 if (moveIndex > -1) moves.splice(moveIndex, 1);
-                
                 cell.classList.remove(X_CLASS, O_CLASS, 'oldest-piece');
-
                 skills[player].damageBoostActive = true;
                 const charElement = isPlayerX ? charX : charO;
                 charElement.classList.add('damage-boost');
-
                 logAction(`${isPlayerX ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText} sacrifica uma peça 💀 para dobrar o próximo dano!`, `player-${player}-log`);
                 playSound(bombSound);
-
                 resetTargetingMode();
                 updateOldestPieceIndicator();
-
                 if (isPlayerX) {
                     swapTurns();
                 } else {
@@ -2687,7 +2656,6 @@
             function activateSwap(player, skillId) {
                  if (!isGameActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId) || targetingState) return;
                  if (handleMirrorReflection(player, skillId)) return;
-
                  targetingState = { skill: 'swap', player: player, step: 1, firstCell: null };
                  boardElement.classList.add('targeting', 'targeting-swap');
                  logAction("Selecione a primeira peça para trocar.", "system-log");
@@ -2696,19 +2664,14 @@
 
             function handleSwapExecution(cell1, cell2) {
                 const player = targetingState.player;
-                
                 const class1 = cell1.classList.contains(X_CLASS) ? X_CLASS : O_CLASS;
                 const class2 = cell2.classList.contains(X_CLASS) ? X_CLASS : O_CLASS;
-
                 cell1.classList.remove(class1); cell1.classList.add(class2);
                 cell2.classList.remove(class2); cell2.classList.add(class1);
-
                 const moves1 = class1 === X_CLASS ? movesX : movesO;
                 const moves2 = class2 === X_CLASS ? movesX : movesO;
-                
                 const index1 = moves1.indexOf(cell1);
                 const index2 = moves2.indexOf(cell2);
-
                 if (class1 === class2) {
                     if(index1 > -1) moves1[index1] = cell2;
                     if(index2 > -1) moves1[index2] = cell1;
@@ -2716,35 +2679,29 @@
                     if (index1 > -1) moves1.splice(index1, 1, cell2);
                     if (index2 > -1) moves2.splice(index2, 1, cell1);
                 }
-                
                 if (class1 !== class2) swappedOwnWithEnemy = true;
-                
                 logAction(`${player === X_CLASS ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText} usa Troca 🔁!`, `player-${player}-log`);
                 playSound(teleportSound);
                 playerSkillsUsed[player].push('swap');
-                
                 resetTargetingMode();
-                
                 const winX = checkWin(X_CLASS, movesX);
                 const winO = checkWin(O_CLASS, movesO);
-
                 if(winX.hasWon) {
                     handleDamage(X_CLASS, DAMAGE_PER_POINT, winX.combo);
                 } else if (winO.hasWon) {
                     handleDamage(O_CLASS, DAMAGE_PER_POINT, winO.combo);
                 } else {
                      if (player === X_CLASS) {
-                           swapTurns();
+                          swapTurns();
                      } else {
-                           setTimeout(() => swapTurns(), 500);
+                          setTimeout(() => swapTurns(), 500);
                      }
                 }
             }
-            
+             
             function activateShove(player, skillId){ 
                 if (!isGameActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId) || targetingState) return;
                 if (handleMirrorReflection(player, skillId)) return;
-
                 targetingState = { skill: 'shove', player: player, step: 1, pieceToMove: null };
                 boardElement.classList.add('targeting', 'targeting-shove');
                 logAction("Selecione uma peça (sua ou inimiga) para empurrar.", "system-log");
@@ -2768,22 +2725,17 @@
             function handleShoveExecution(originCell, destinationCell) {
                 const player = targetingState.player;
                 const pieceClass = originCell.classList.contains(X_CLASS) ? X_CLASS : O_CLASS;
-                
                 originCell.classList.remove(pieceClass);
                 destinationCell.classList.add(pieceClass);
-
                 const moves = pieceClass === X_CLASS ? movesX : movesO;
                 const moveIndex = moves.indexOf(originCell);
                 if (moveIndex > -1) {
                     moves[moveIndex] = destinationCell;
                 }
-
                 logAction(`${player === X_CLASS ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText} usa Empurrão 🖐️!`, `player-${player}-log`);
                 playSound(teleportSound);
                 playerSkillsUsed[player].push('shove');
-                
                 resetTargetingMode();
-
                 const winResult = checkWin(pieceClass, moves);
                 if (winResult.hasWon) {
                     handleDamage(pieceClass, DAMAGE_PER_POINT, winResult.combo);
@@ -2801,22 +2753,19 @@
                  const playerSkills = player === X_CLASS ? skills.x : skills.o;
                  if(playerSkills.mirrorActive || playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].includes(skillId)) return;
                  if (handleMirrorReflection(player, skillId)) return;
-
                  playerSkills.mirrorActive = true;
                  playerSkillsUsed[player === X_CLASS ? 'x' : 'o'].push(skillId);
-
                  const charElement = player === X_CLASS ? charX : charO;
                  charElement.classList.add('mirror-active');
                  logAction(`${player === X_CLASS ? gamePlayerLabelX.innerText : gamePlayerLabelO.innerText} ativa o Espelho 🪞.`, `player-${player}-log`);
                  playSound(shieldSound);
                  updateSkillButtonsState();
-
                  if(player === O_CLASS){
                       setTimeout(() => swapTurns(), 500);
                  } else {
                     swapTurns();
                  }
-            }
+             }
              
              function handleMirrorReflection(player, skillId) {
                  const opponent = player === X_CLASS ? 'o' : 'x';
@@ -2826,19 +2775,13 @@
                       const opponentChar = opponent === X_CLASS ? charX : charO;
                       opponentChar.classList.remove('mirror-active');
                       playSound(shieldSound);
-                      
-                      // Skill was used up by the reflection attempt
                       playerSkillsUsed[player].push(skillId);
-                      
                       updateSkillButtonsState();
-
-                      // The mirrored action counts as the original user's turn
                       setTimeout(() => swapTurns(), 500); 
-
                       return true;
                  }
                  return false;
-            }
+             }
 
              function resetTargetingMode() {
                  if (targetingState) {
@@ -2849,11 +2792,9 @@
                  boardElement.className = 'board'; // Reset all targeting classes
                  cellElements.forEach(c => c.classList.remove('targetable'));
                  updateSkillButtonsState();
-            }
+             }
 
-            // ===================================
-            // INÍCIO DA SUBSTITUIÇÃO DO JAVASCRIPT
-            // ===================================
+            // ===== INÍCIO DA FUNÇÃO JAVASCRIPT CORRIGIDA =====
             function drawWinningLaserLine(winnerClass, combo) {
                 // 1. Mapeia a combinação vencedora para a classe CSS correta
                 const comboStr = combo.join('');
@@ -2869,7 +2810,7 @@
                     winningLaserLine.style.setProperty('--laser-color', winnerClass === X_CLASS ? 'var(--cor-x)' : 'var(--cor-o)');
 
                     // 3. Limpa classes antigas e adiciona a classe correta para a posição e a animação
-                    winningLaserLine.className = ''; // Limpa tudo
+                    winningLaserLine.className = 'winning-laser-active'; // Limpa tudo, exceto a classe base
                     winningLaserLine.classList.add('show', lineClass);
 
                     // 4. Anima as células da vitória
@@ -2880,9 +2821,8 @@
                     });
                 }
             }
-            // ===================================
-            // FIM DA SUBSTITUIÇÃO DO JAVASCRIPT
-            // ===================================
+            // ===== FIM DA FUNÇÃO JAVASCRIPT CORRIGIDA =====
+
 
             function updateSkillButtonsState(){
                 if (!skills) return;
